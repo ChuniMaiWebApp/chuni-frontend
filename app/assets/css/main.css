@@ -1,4 +1,22 @@
+/*
+ * Design tokens.
+ *
+ * Two layers, kept apart on purpose:
+ *
+ *   1. Chrome — background, surface, border, accent. These are the app's own
+ *      taste and are being redesigned; see design/01-visual-direction.md.
+ *   2. Game — rank, rating tier, difficulty, lamp. These are measured from
+ *      SEGA's artwork and are facts, not choices. See design/00-game-colours.md.
+ *
+ * Theming works two ways at once. The media query handles "follow the system",
+ * which is the default and needs no JavaScript. The `[data-theme]` selectors
+ * let an explicit choice win, and are ordered after the query so they do.
+ */
+
 :root {
+  color-scheme: light dark;
+
+  /* --- Chrome (light) ------------------------------------------------- */
   --color-bg: #f7f7f9;
   --color-surface: #ffffff;
   --color-text: #16161a;
@@ -9,10 +27,77 @@
   --color-down: #dc2626;
 
   --radius: 10px;
+
+  /* --- Game: rating tiers ---------------------------------------------
+   * Sampled from rating/rating_<tier>_08.png. Do not adjust to taste; a
+   * correction belongs in design/00-game-colours.md first.
+   */
+  --rating-green: #32fd23;
+  --rating-orange: #f5b404;
+  --rating-red: #fd576b;
+  --rating-purple: #fd66f5;
+  --rating-bronze: #db570a;
+  --rating-silver: #8ae7ff;
+  --rating-gold: #f6cb11;
+  --rating-platinum: #fff9e5;
+
+  /* --- Game: ranks ----------------------------------------------------
+   * S through SSS share one colour because SEGA's artwork does. The game
+   * separates them by badge shape, not hue.
+   */
+  --rank-d: #a9a7a5;
+  --rank-c: #ff9944;
+  --rank-b: #8affff;
+  --rank-bb: #a3ffff;
+  --rank-bbb: #b8ffff;
+  --rank-a: #fff525;
+  --rank-aa: #fff625;
+  --rank-aaa: #fff717;
+  --rank-s: #fbecad;
+  --rank-sssp: #00bae8;
+
+  /* --- Game: difficulties --------------------------------------------- */
+  --difficulty-basic: #009f7b;
+  --difficulty-advanced: #f47900;
+  --difficulty-expert: #e92829;
+  --difficulty-master: #8c1be1;
+  --difficulty-ultima: #c80000;
+  --difficulty-worlds-end: #0b6ff3;
+
+  /*
+   * The rainbow the game paints on rating 16+ and SSS+.
+   *
+   * Vertical, not a horizontal sweep: each glyph carries the whole spectrum
+   * top to bottom. Read scanline by scanline out of rating_rainbow_02/06/08.png
+   * and consistent across all three, so it is the asset's own ramp rather than
+   * an interpretation of it.
+   */
+  --iridescent: linear-gradient(
+    180deg,
+    #ff8f9c 0%,
+    #ff957a 14%,
+    #ffe45e 34%,
+    #caff22 46%,
+    #6cff45 58%,
+    #28ffbd 72%,
+    #15fff3 86%,
+    #41cae0 100%
+  );
+
+  /*
+   * Keyline behind the rainbow glyphs.
+   *
+   * The ramp is built for a dark backdrop; on white its gold and lime stops
+   * measure barely 1.5:1. A dark keyline restores the edge without touching
+   * the hues, which is the same trick the game uses on its own light panels.
+   * Dark mode needs none — bright on near-black already separates.
+   */
+  --iridescent-outline: #2a2118;
 }
 
+/* Dark, when the system asks for it and no explicit choice is stored. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --color-bg: #0e0e11;
     --color-surface: #17171c;
     --color-text: #f4f4f5;
@@ -21,7 +106,37 @@
     --color-accent: #818cf8;
     --color-up: #4ade80;
     --color-down: #f87171;
+    --iridescent-outline: transparent;
   }
+}
+
+/* Dark, chosen explicitly. Kept identical to the block above by hand: CSS has
+   no way to share a declaration set between a media query and a selector. */
+:root[data-theme='dark'] {
+  --color-bg: #0e0e11;
+  --color-surface: #17171c;
+  --color-text: #f4f4f5;
+  --color-muted: #9ca3af;
+  --color-border: #27272e;
+  --color-accent: #818cf8;
+  --color-up: #4ade80;
+  --color-down: #f87171;
+  --iridescent-outline: transparent;
+}
+
+/* Light, chosen explicitly, on a system set to dark. Values repeat `:root`
+   rather than relying on the cascade, which the media query would otherwise
+   have already overridden. */
+:root[data-theme='light'] {
+  --color-bg: #f7f7f9;
+  --color-surface: #ffffff;
+  --color-text: #16161a;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-accent: #4f46e5;
+  --color-up: #16a34a;
+  --color-down: #dc2626;
+  --iridescent-outline: #2a2118;
 }
 
 *,

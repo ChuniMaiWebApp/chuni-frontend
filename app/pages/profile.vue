@@ -93,7 +93,6 @@ const stats = computed(() => {
   if (!profile.value) return []
 
   return [
-    { label: 'Rating', value: profile.value.rating.toFixed(2) },
     { label: 'Level', value: profile.value.level ?? '—' },
     {
       label: 'OVER POWER',
@@ -189,6 +188,17 @@ const stats = computed(() => {
       </div>
 
       <dl class="stats">
+        <div class="card stat">
+          <dt>Rating</dt>
+          <dd>
+            <RatingValue
+              v-if="profile"
+              :rating="profile.rating"
+              kind="player"
+              size="md"
+            />
+          </dd>
+        </div>
         <div v-for="stat in stats" :key="stat.label" class="card stat">
           <dt>{{ stat.label }}</dt>
           <dd>{{ stat.value }}</dd>

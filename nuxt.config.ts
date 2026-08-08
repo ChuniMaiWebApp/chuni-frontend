@@ -33,6 +33,18 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Chunithm queue web app' },
       ],
       link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+      script: [
+        {
+          // Runs before first paint so an explicitly chosen theme does not
+          // flash the system one first. The server cannot know the choice —
+          // it lives in localStorage — so this is the only place it can
+          // happen without a visible swap.
+          innerHTML:
+            "try{var t=localStorage.getItem('chunithmqueue:theme');"
+            + "if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}",
+          tagPriority: 'critical',
+        },
+      ],
     },
   },
 })

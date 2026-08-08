@@ -60,7 +60,7 @@ const judgements = computed(() => props.score.judgements)
       <p class="score__chart">{{ chartLabel(score) }}</p>
 
       <p class="score__line">
-        <strong class="score__rank">{{ rankLabel(score.rank) }}</strong>
+        <RankBadge :rank="score.rank" size="sm" />
         <span class="score__value">{{ formatScore(score.score) }}</span>
         <span v-for="lamp in lamps" :key="lamp" class="score__lamp">{{ lamp }}</span>
       </p>
@@ -72,7 +72,7 @@ const judgements = computed(() => props.score.judgements)
       </p>
 
       <footer class="score__footer">
-        <span>Rating <strong>{{ formatRating(score.rating) }}</strong></span>
+        <span>Rating <RatingValue :rating="score.rating" size="sm" /></span>
         <span>OP {{ formatOverpower(score) }}</span>
         <span v-if="score.achievedAt" class="score__date">
           {{ formatDateTime(score.achievedAt) }}
@@ -155,11 +155,6 @@ const judgements = computed(() => props.score.judgements)
   flex-wrap: wrap;
   gap: 0.5rem;
   margin: 0;
-}
-
-.score__rank {
-  font-size: 1rem;
-  letter-spacing: 0.02em;
 }
 
 .score__value {

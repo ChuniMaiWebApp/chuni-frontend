@@ -122,7 +122,7 @@ const overpowerPercent = computed(() => {
         </p>
 
         <p class="detail__lamps">
-          <span class="detail__rank">{{ rankLabel(score.rank) }}</span>
+          <RankBadge :rank="score.rank" />
           <span v-for="lamp in lamps" :key="lamp" class="detail__lamp">{{ lamp }}</span>
         </p>
       </div>
@@ -174,7 +174,7 @@ const overpowerPercent = computed(() => {
         <dl class="worth">
           <div>
             <dt>Play rating</dt>
-            <dd>{{ formatRating(score.rating) }}</dd>
+            <dd><RatingValue :rating="score.rating" /></dd>
           </div>
           <div v-if="score.chart.difficulty !== undefined && chart?.const">
             <dt>Chart constant</dt>
@@ -266,19 +266,12 @@ const overpowerPercent = computed(() => {
   margin: 0.625rem 0 0;
 }
 
-.detail__rank,
 .detail__lamp {
   border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 0.1rem 0.55rem;
   font-size: 0.6875rem;
   letter-spacing: 0.05em;
-}
-
-.detail__rank {
-  border-color: var(--difficulty);
-  color: var(--difficulty);
-  font-weight: 700;
 }
 
 .detail__lamp {

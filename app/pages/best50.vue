@@ -43,8 +43,8 @@ const frames = computed(() => {
       <div>
         <h1>Rating breakdown</h1>
         <p v-if="data" class="rating">
-          {{ data.rating.toFixed(2) }}
-          <span>as reported by the game</span>
+          <RatingValue :rating="data.rating" kind="player" size="lg" />
+          <span class="rating__caption">as reported by the game</span>
         </p>
       </div>
 
@@ -117,15 +117,13 @@ const frames = computed(() => {
   margin: 0;
 }
 
+/* Size and weight now come from RatingValue, which also owns the tier colour. */
 .rating {
   margin: 0.25rem 0 0;
-  font-size: 2rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
 
-.rating span {
+.rating__caption {
   display: block;
   font-size: 0.75rem;
   font-weight: 400;

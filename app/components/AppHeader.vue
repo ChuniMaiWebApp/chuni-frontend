@@ -1,5 +1,9 @@
 <script setup lang="ts">
 const { user, isSignedIn, logout } = useAuth()
+const { preference, cycle } = useTheme()
+
+const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' } as const
+const THEME_ICON = { system: '◐', light: '☀', dark: '☾' } as const
 
 const signOut = async () => {
   await logout()
@@ -31,6 +35,15 @@ const signOut = async () => {
       </nav>
 
       <div class="app-header__account">
+        <button
+          type="button"
+          class="app-header__theme"
+          :title="`Theme: ${THEME_LABEL[preference]}`"
+          :aria-label="`Theme: ${THEME_LABEL[preference]}. Click to change.`"
+          @click="cycle()"
+        >
+          <span aria-hidden="true">{{ THEME_ICON[preference] }}</span>
+        </button>
         <template v-if="user">
           <span class="app-header__user">{{ user.displayName }}</span>
           <button type="button" @click="signOut">Sign out</button>
@@ -93,6 +106,16 @@ const signOut = async () => {
 
 .app-header__user {
   color: var(--color-muted);
+}
+
+/* Square, so it reads as an icon control rather than another word in the row. */
+.app-header__theme {
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0 !important;
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
 }
 
 .app-header__account button {
