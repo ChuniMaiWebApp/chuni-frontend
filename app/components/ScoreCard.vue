@@ -1,83 +1,96 @@
 <script setup lang="ts">
-import { ComboLamp, type AnyScore } from '~~/shared/types/api'
+import type { AnyScore } from '~~/shared/types/api'
 
+/**
+ * One score, sized for a list of fifty.
+ *
+ * The card this replaces stood about 150px tall for four short lines, which
+ * meant a Best 50 ran to some seven screens of thumb. Everything here is on
+ * two rows: what the play was, and what it was worth.
+ *
+ * Reading order is deliberate. Scanning a list, a player is looking for the
+ * song and the score, so those are the largest things and sit at opposite ends
+ * of the first row. Difficulty, rank and lamps qualify the play and sit
+ * underneath at label size. Rating and OVER POWER close the row on the right,
+ * where the eye already is after the score.
+ */
 const props = defineProps<{
   score: AnyScore
   /** Position in a best30/new20 list. */
   index?: number
 }>()
 
-/**
- * A combo lamp supersedes the clear lamp, so CLEAR is only worth showing when
- * there is no FULL COMBO / ALL JUSTICE. Unknown lamps render as nothing.
- */
-const lamps = computed(() =>
-  [
-    comboLampLabel(props.score.comboLamp),
-    chainLampLabel(props.score.chainLamp),
-    props.score.comboLamp === ComboLamp.NONE
-      ? clearLampLabel(props.score.clearLamp)
-      : null,
-  ].filter((lamp): lamp is string => lamp !== null),
-)
+const lamps = computed(() => scoreLamps(props.score))
 
 const trackNo = computed(() =>
   'trackNo' in props.score ? props.score.trackNo : null,
 )
+
 const isNewRecord = computed(() =>
   'isNewRecord' in props.score ? props.score.isNewRecord : false,
 )
-const judgements = computed(() => props.score.judgements)
+
+/** `95.53%` — the raw OVER POWER means little without its ceiling. */
+const overpowerPercent = computed(() => {
+  const { overpower, maxOverpower } = props.score
+
+  if (overpower === null || maxOverpower === null || maxOverpower === 0) {
+    return null
+  }
+
+  return `${(Math.floor((overpower / maxOverpower) * 10_000) / 100).toFixed(2)}%`
+})
 </script>
 
 <template>
   <article
     class="score"
-    :style="{ '--difficulty': difficultyColour(score.chart.difficulty) }"
+    :style="{ '--difficulty': difficultyInk(score.chart.difficulty) }"
   >
-    <div class="score__jacket">
-      <img
-        v-if="score.song.jacketUrl"
-        :src="score.song.jacketUrl"
-        :alt="score.song.title"
-        loading="lazy"
-        width="72"
-        height="72"
-      >
-      <div v-else class="score__jacket-placeholder" aria-hidden="true" />
-    </div>
+    <img
+      v-if="score.song.jacketUrl"
+      :src="score.song.jacketUrl"
+      :alt="score.song.title"
+      loading="lazy"
+      width="52"
+      height="52"
+      class="score__jacket"
+    >
+    <div v-else class="score__jacket score__jacket--empty" aria-hidden="true" />
 
     <div class="score__body">
-      <header class="score__header">
-        <span v-if="index !== undefined" class="score__index">#{{ index }}</span>
-        <span v-else-if="trackNo" class="score__index">TRACK {{ trackNo }}</span>
+      <div class="score__row">
+        <span v-if="index !== undefined" class="score__index">{{ index }}</span>
+        <span v-else-if="trackNo" class="score__index">T{{ trackNo }}</span>
 
-        <h3 class="score__title">{{ score.song.title }}</h3>
+        <h3 class="score__title" :title="score.song.title">{{ score.song.title }}</h3>
 
-        <span v-if="isNewRecord" class="score__badge">NEW</span>
-      </header>
+        <span v-if="isNewRecord" class="score__new">NEW</span>
 
-      <p class="score__chart">{{ chartLabel(score) }}</p>
+        <span class="score__value tabular">{{ formatScore(score.score) }}</span>
+      </div>
 
-      <p class="score__line">
+      <div class="score__row score__row--meta">
+        <DifficultyLabel
+          :difficulty="score.chart.difficulty"
+          :level="chartLevelValue(score)"
+          size="sm"
+        />
+
         <RankBadge :rank="score.rank" size="sm" />
-        <span class="score__value">{{ formatScore(score.score) }}</span>
-        <span v-for="lamp in lamps" :key="lamp" class="score__lamp">{{ lamp }}</span>
-      </p>
 
-      <p v-if="judgements" class="score__judgements">
-        {{ judgements.justiceCritical }} / {{ judgements.justice }} /
-        {{ judgements.attack }} / {{ judgements.miss }}
-        <span v-if="score.maxCombo !== null">· x{{ score.maxCombo }}</span>
-      </p>
+        <LampBadge
+          v-for="lamp in lamps"
+          :key="lamp.label"
+          :lamp="lamp"
+          size="sm"
+        />
 
-      <footer class="score__footer">
-        <span>Rating <RatingValue :rating="score.rating" size="sm" /></span>
-        <span>OP {{ formatOverpower(score) }}</span>
-        <span v-if="score.achievedAt" class="score__date">
-          {{ formatDateTime(score.achievedAt) }}
+        <span class="score__worth tabular">
+          <RatingValue :rating="score.rating" size="sm" />
+          <span v-if="overpowerPercent" class="score__op">{{ overpowerPercent }}</span>
         </span>
-      </footer>
+      </div>
     </div>
   </article>
 </template>
@@ -85,115 +98,93 @@ const judgements = computed(() => props.score.judgements)
 <style scoped>
 .score {
   display: flex;
-  gap: 0.875rem;
-  padding: 0.875rem;
-  border: 1px solid var(--color-border);
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  /* The difficulty reads from the left edge without a bar thick enough to
+     compete with the jacket next to it. */
   border-left: 3px solid var(--difficulty);
-  border-radius: var(--radius);
+  border-radius: 6px;
   background: var(--color-surface);
 }
 
-.score__jacket img,
-.score__jacket-placeholder {
-  width: 72px;
-  height: 72px;
-  border-radius: 6px;
+.score__jacket {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 4px;
   object-fit: cover;
   display: block;
 }
 
-.score__jacket-placeholder {
+.score__jacket--empty {
   background: var(--color-bg);
-  border: 1px solid var(--color-border);
 }
 
 .score__body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.score__header {
+.score__row {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.score__row--meta {
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .score__index {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   color: var(--color-muted);
   flex-shrink: 0;
 }
 
 .score__title {
-  font-size: 0.9375rem;
   margin: 0;
+  font-size: 0.875rem;
+  font-weight: 650;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
-.score__badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+.score__new {
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   color: var(--color-accent);
+}
+
+/* Pushed to the far edge: the eye lands on the title, then travels to it. */
+.score__value {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.score__worth {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
   flex-shrink: 0;
 }
 
-.score__chart {
-  margin: 0.125rem 0 0.375rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.03em;
-  color: var(--difficulty);
-  font-weight: 600;
-}
-
-.score__line {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0;
-}
-
-.score__value {
-  font-size: 1rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.score__lamp {
+.score__op {
   font-size: 0.6875rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  padding: 0.05rem 0.35rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
   color: var(--color-muted);
-}
-
-.score__judgements {
-  margin: 0.375rem 0 0;
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-muted);
-}
-
-.score__footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--color-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.score__footer strong {
-  color: var(--color-text);
-}
-
-.score__date {
-  margin-left: auto;
 }
 </style>

@@ -24,6 +24,7 @@ defineProps<{
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .status-card__dot {
@@ -36,21 +37,27 @@ defineProps<{
 
 .status-card--up .status-card__dot {
   background: var(--color-up);
+  box-shadow: 0 0 6px var(--color-up);
 }
 
 .status-card--down .status-card__dot {
   background: var(--color-down);
+  box-shadow: 0 0 6px var(--color-down);
 }
 
 .status-card__label {
-  font-weight: 550;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
 }
 
 .status-card__value {
   margin-left: auto;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--color-muted);
 }
 </style>
+

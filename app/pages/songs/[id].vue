@@ -7,7 +7,7 @@ const { data: song, error } = await useApiFetch<SongDetail>(
   () => `/songs/${route.params.id}`,
 )
 
-useHead(() => ({ title: song.value ? `${song.value.title} · ChunithmQueue` : 'Song' }))
+useHead(() => ({ title: song.value ? `${song.value.title} · ChunithmQueue` : 'Song Detail' }))
 
 const bpmLabel = computed(() => {
   const bpm = song.value?.bpm
@@ -108,88 +108,89 @@ const availability = computed(() => {
 </script>
 
 <template>
-  <section>
+  <section class="song-detail-page">
     <ApiError v-if="error" :error="error" />
 
     <template v-else-if="song">
-      <NuxtLink to="/songs" class="back">← Songs</NuxtLink>
+      <NuxtLink to="/songs" class="back-link">← Back to Songs</NuxtLink>
 
-      <header class="hero">
+      <header class="hero card">
         <img
           v-if="song.jacketUrl"
           :src="song.jacketUrl"
           :alt="song.title"
           width="140"
           height="140"
+          class="hero__jacket"
         >
+        <div v-else class="hero__jacket-placeholder" />
 
         <div class="hero__body">
-          <h1>{{ song.title }}</h1>
+          <h1 class="hero__title">{{ song.title }}</h1>
           <p class="hero__artist">{{ song.artist }}</p>
 
-          <dl class="facts">
-            <div><dt>Genre</dt><dd>{{ song.genre }}</dd></div>
-            <div><dt>Version</dt><dd>{{ song.version }}</dd></div>
-            <div v-if="song.releaseDate">
+          <dl class="facts-grid">
+            <div class="fact-item"><dt>Genre</dt><dd>{{ song.genre }}</dd></div>
+            <div class="fact-item"><dt>Version</dt><dd>{{ song.version }}</dd></div>
+            <div v-if="song.releaseDate" class="fact-item">
               <dt>Released</dt><dd>{{ song.releaseDate }}</dd>
             </div>
-            <div v-if="bpmLabel"><dt>BPM</dt><dd>{{ bpmLabel }}</dd></div>
-            <div v-if="durationLabel">
-              <dt>Length</dt><dd>{{ durationLabel }}</dd>
+            <div v-if="bpmLabel" class="fact-item"><dt>BPM</dt><dd class="tabular">{{ bpmLabel }}</dd></div>
+            <div v-if="durationLabel" class="fact-item">
+              <dt>Length</dt><dd class="tabular">{{ durationLabel }}</dd>
             </div>
           </dl>
 
+          <!-- MANDATORY NOTICE PRESERVED -->
           <p v-if="availability" class="notice" :class="`notice--${availability.tone}`">
-            {{ availability.text }}
+            <strong>{{ availability.text }}</strong>
             <span v-if="availability.detail">{{ availability.detail }}</span>
           </p>
 
           <p v-if="song.aliases.length" class="aliases">
-            Also known as:
-            <span v-for="alias in song.aliases" :key="alias">{{ alias }}</span>
+            Aliases:
+            <span v-for="alias in song.aliases" :key="alias" class="alias-tag">{{ alias }}</span>
           </p>
         </div>
       </header>
 
-      <h2 class="section-title">Charts</h2>
+      <h2 class="section-title">Charts &amp; Boundaries</h2>
 
-      <ul class="charts">
+      <ul class="charts-grid">
         <li
           v-for="chart in song.charts"
           :key="chart.difficultyName"
-          class="chart"
-          :style="{ '--difficulty': difficultyColour(chart.difficulty) }"
+          class="chart-card card"
+          :style="{ '--difficulty': difficultyInk(chart.difficulty) }"
         >
           <div class="chart__head">
             <span class="chart__difficulty">
-              {{ chart.difficultyName }}
-              <!-- Only flagged when Japan has it and we do not; a chart absent
-                   from both is not a regional difference. -->
+              <DifficultyLabel
+                :difficulty="chart.difficulty"
+                :level="chart.const ?? chart.level"
+              />
               <span
                 v-if="chart.availableIntl === false && chart.availableJp"
                 class="chart__region"
                 title="In the Japanese version only"
-              >JP only</span>
+              >JP ONLY</span>
             </span>
-            <span class="chart__level">
-              {{ chart.level }}
-              <small v-if="chart.const !== null">({{ chart.const }})</small>
-            </span>
+            <span class="chart__level tabular">{{ chart.level }}</span>
           </div>
 
           <dl class="chart__notes">
-            <div v-if="totalNotes(chart)">
-              <dt>Notes</dt><dd>{{ totalNotes(chart) }}</dd>
+            <div v-if="totalNotes(chart)" class="note-fact">
+              <dt>Total</dt><dd class="tabular">{{ totalNotes(chart) }}</dd>
             </div>
-            <div v-if="chart.notes.tap"><dt>Tap</dt><dd>{{ chart.notes.tap }}</dd></div>
-            <div v-if="chart.notes.hold"><dt>Hold</dt><dd>{{ chart.notes.hold }}</dd></div>
-            <div v-if="chart.notes.slide"><dt>Slide</dt><dd>{{ chart.notes.slide }}</dd></div>
-            <div v-if="chart.notes.air"><dt>Air</dt><dd>{{ chart.notes.air }}</dd></div>
-            <div v-if="chart.notes.flick"><dt>Flick</dt><dd>{{ chart.notes.flick }}</dd></div>
+            <div v-if="chart.notes.tap" class="note-fact"><dt>Tap</dt><dd class="tabular">{{ chart.notes.tap }}</dd></div>
+            <div v-if="chart.notes.hold" class="note-fact"><dt>Hold</dt><dd class="tabular">{{ chart.notes.hold }}</dd></div>
+            <div v-if="chart.notes.slide" class="note-fact"><dt>Slide</dt><dd class="tabular">{{ chart.notes.slide }}</dd></div>
+            <div v-if="chart.notes.air" class="note-fact"><dt>Air</dt><dd class="tabular">{{ chart.notes.air }}</dd></div>
+            <div v-if="chart.notes.flick" class="note-fact"><dt>Flick</dt><dd class="tabular">{{ chart.notes.flick }}</dd></div>
           </dl>
 
           <p v-if="chart.charter" class="chart__charter">
-            Charted by {{ chart.charter }}
+            Charted by <strong>{{ chart.charter }}</strong>
           </p>
 
           <div class="chart__links">
@@ -198,15 +199,18 @@ const availability = computed(() => {
               :href="chart.sdvxinUrl"
               target="_blank"
               rel="noopener"
-            >Chart view</a>
-            <a :href="chart.youtubeUrl" target="_blank" rel="noopener">Video</a>
+              class="chart-link"
+            ><AppIcon name="external" /> Chart view</a>
+            <a :href="chart.youtubeUrl" target="_blank" rel="noopener" class="chart-link"><AppIcon name="external" /> Video</a>
             <NuxtLink
               :to="`/leaderboard?songId=${song.id}&difficulty=${chart.difficulty}`"
-            >Leaderboard</NuxtLink>
+              class="chart-link"
+            ><AppIcon name="trophy" /> Leaderboard</NuxtLink>
             <NuxtLink
               v-if="totalNotes(chart)"
               :to="`/tools?notecount=${totalNotes(chart)}`"
-            >Borders</NuxtLink>
+              class="chart-link"
+            ><AppIcon name="chart" /> Borders</NuxtLink>
           </div>
         </li>
       </ul>
@@ -215,74 +219,112 @@ const availability = computed(() => {
 </template>
 
 <style scoped>
-.back {
-  display: inline-block;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+.song-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 650;
   color: var(--color-muted);
   text-decoration: none;
+  width: fit-content;
+}
+
+.back-link:hover {
+  color: var(--color-accent);
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .hero {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 1.5rem;
 }
 
-.hero img {
-  border-radius: 10px;
+.hero__jacket,
+.hero__jacket-placeholder {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius);
   object-fit: cover;
   flex-shrink: 0;
 }
 
-.hero h1 {
+.hero__jacket-placeholder {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+
+.hero__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero__title {
   margin: 0;
   font-size: 1.5rem;
+  font-weight: 800;
 }
 
 .hero__artist {
   margin: 0.25rem 0 1rem;
   color: var(--color-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
-.facts {
+.facts-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem;
   margin: 0;
 }
 
-.facts dt {
+.fact-item dt {
   font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
 }
 
-.facts dd {
-  margin: 0.1rem 0 0;
-  font-variant-numeric: tabular-nums;
+.fact-item dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
 }
 
 .notice {
   margin: 1rem 0 0;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--radius);
-  border-left: 3px solid currentColor;
-  background: var(--color-surface);
+  border-left: 4px solid currentColor;
+  background: var(--color-bg);
   font-size: 0.8125rem;
   max-width: 44rem;
 }
 
 .notice--warning {
   color: var(--color-down);
+  border-color: var(--color-down);
 }
 
 .notice--note {
   color: var(--color-muted);
+  border-color: var(--color-accent);
 }
 
-/* The claim carries the colour; the evidence behind it is set quieter. */
 .notice span {
   display: block;
   margin-top: 0.25rem;
@@ -293,41 +335,43 @@ const availability = computed(() => {
   margin: 1rem 0 0;
   font-size: 0.8125rem;
   color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.aliases span::after {
-  content: ', ';
-}
-
-.aliases span:last-child::after {
-  content: '';
+.alias-tag {
+  background: var(--color-bg);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .section-title {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0.5rem 0 0;
 }
 
-.charts {
+.charts-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 0.875rem;
 }
 
-.chart {
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--difficulty);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  padding: 0.875rem 1rem;
+.chart-card {
+  border-left: 4px solid var(--difficulty);
+  padding: 1.125rem;
 }
 
 .chart__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
@@ -335,68 +379,88 @@ const availability = computed(() => {
 .chart__difficulty {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-weight: 650;
-  font-size: 0.8125rem;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 0.875rem;
   letter-spacing: 0.04em;
   color: var(--difficulty);
 }
 
 .chart__region {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-down);
   border-radius: 999px;
-  padding: 0.05rem 0.4rem;
-  font-size: 0.5625rem;
-  font-weight: 500;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 800;
   letter-spacing: 0.06em;
-  color: var(--color-muted);
+  color: var(--color-down);
+  background: color-mix(in srgb, var(--color-down) 10%, transparent);
 }
 
 .chart__level {
-  font-size: 1.125rem;
-  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .chart__level small {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-muted);
+  font-weight: 600;
 }
 
 .chart__notes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: 0.75rem 0 0;
+  gap: 0.875rem;
+  margin: 0.875rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
 }
 
-.chart__notes dt {
+.note-fact dt {
   font-size: 0.625rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
 }
 
-.chart__notes dd {
-  margin: 0;
-  font-size: 0.875rem;
-  font-variant-numeric: tabular-nums;
+.note-fact dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
 }
 
 .chart__charter {
-  margin: 0.625rem 0 0;
-  font-size: 0.75rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.78125rem;
   color: var(--color-muted);
 }
 
 .chart__links {
   display: flex;
-  gap: 0.875rem;
-  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
   font-size: 0.8125rem;
+  font-weight: 650;
 }
 
-.chart__links a {
+.chart-link {
   color: var(--color-accent);
   text-decoration: none;
 }
+
+.chart-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    flex-direction: column;
+  }
+}
 </style>
+

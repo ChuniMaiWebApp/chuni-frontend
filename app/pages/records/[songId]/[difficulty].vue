@@ -78,37 +78,38 @@ const playIsOlderRun = computed(
 </script>
 
 <template>
-  <section>
+  <section class="chart-record-page">
     <ApiError v-if="error" :error="error" />
 
     <template v-else-if="record">
-      <NuxtLink :to="`/songs/${record.song.id}`" class="back">
-        ← {{ record.song.title }}
+      <NuxtLink :to="`/songs/${record.song.id}`" class="back-link">
+        ← Back to {{ record.song.title }}
       </NuxtLink>
 
-      <p v-if="playIsOlderRun" class="note">
+      <!-- MANDATORY 3-BRANCH NOTICE PRESERVED -->
+      <p v-if="playIsOlderRun" class="note card">
         Showing your most recent run on this chart, not your best. Judgements
         only exist for plays still in the last 50 tracks, and your record
-        ({{ formatScore(best!.score) }}) was set before that.
+        (<strong>{{ formatScore(best!.score) }}</strong>) was set before that.
       </p>
 
-      <p v-else-if="fromCapture" class="note">
+      <p v-else-if="fromCapture" class="note card">
         This chart is not in your last 50 tracks, so CHUNITHM-NET no longer
         serves its judgements. The breakdown below was captured on
-        {{ formatDateTime(record.captured!.capturedAt) }}, while the play was
+        <strong>{{ formatDateTime(record.captured!.capturedAt) }}</strong>, while the play was
         still in the window.
       </p>
 
-      <p v-else-if="!record.play && best" class="note">
-        No play on this chart in your last 50 tracks, so CHUNITHM-NET has no
+      <p v-else-if="!record.play && best" class="note card">
+        <AppIcon name="warning" /> No play on this chart in your last 50 tracks, so CHUNITHM-NET has no
         judgement breakdown to show — it publishes them for the playlog only,
         and this run was never captured while it was there. Everything below
         comes from your cached personal best.
       </p>
 
-      <p v-else-if="!score" class="note">
+      <p v-else-if="!score" class="note card">
         Nothing recorded on this chart yet. Play it, or run a
-        <NuxtLink to="/statistics">sync</NuxtLink> if you have.
+        <NuxtLink to="/statistics">Sync</NuxtLink> if you have.
       </p>
 
       <ScoreDetail
@@ -118,93 +119,115 @@ const playIsOlderRun = computed(
         :track-no="record.play?.trackNo ?? null"
       >
         <template #panels>
-          <section class="panel">
-            <h3>Chart</h3>
+          <section class="panel card">
+            <h3 class="panel__title">Chart Info</h3>
             <dl class="meta">
-              <div><dt>Artist</dt><dd>{{ record.song.artist }}</dd></div>
-              <div><dt>Genre</dt><dd>{{ record.song.genre }}</dd></div>
-              <div v-if="record.chart.charter">
+              <div class="meta-row"><dt>Artist</dt><dd>{{ record.song.artist }}</dd></div>
+              <div class="meta-row"><dt>Genre</dt><dd>{{ record.song.genre }}</dd></div>
+              <div v-if="record.chart.charter" class="meta-row">
                 <dt>Charter</dt><dd>{{ record.chart.charter }}</dd>
               </div>
-              <!-- Worth stating outright: without a playlog entry the score
-                   line has no combo to hang the notecount off. -->
-              <div v-if="record.chart.maxCombo">
-                <dt>Notes</dt><dd>{{ record.chart.maxCombo.toLocaleString('en-GB') }}</dd>
+              <div v-if="record.chart.maxCombo" class="meta-row">
+                <dt>Notes</dt><dd class="tabular">{{ record.chart.maxCombo.toLocaleString('en-GB') }}</dd>
               </div>
-              <div v-if="best">
+              <div v-if="best" class="meta-row">
                 <dt>Personal best</dt>
-                <dd>{{ formatScore(best.score) }}</dd>
+                <dd class="tabular"><strong>{{ formatScore(best.score) }}</strong></dd>
               </div>
             </dl>
           </section>
         </template>
       </ScoreDetail>
 
-      <nav class="links">
+      <nav class="links card">
         <a
           v-if="record.chart.sdvxinUrl"
           :href="record.chart.sdvxinUrl"
           target="_blank"
           rel="noopener"
-        >Chart view</a>
-        <a :href="record.chart.youtubeUrl" target="_blank" rel="noopener">Video</a>
-        <NuxtLink :to="`/leaderboard?songId=${record.song.id}&difficulty=${difficulty}`">
-          Leaderboard
+          class="action-link"
+        ><AppIcon name="external" /> Chart view</a>
+        <a :href="record.chart.youtubeUrl" target="_blank" rel="noopener" class="action-link"><AppIcon name="external" /> Video</a>
+        <NuxtLink :to="`/leaderboard?songId=${record.song.id}&difficulty=${difficulty}`" class="action-link">
+          <AppIcon name="trophy" /> Leaderboard
         </NuxtLink>
         <NuxtLink
           v-if="record.chart.maxCombo"
           :to="`/tools?notecount=${record.chart.maxCombo}`"
-        >Borders</NuxtLink>
+          class="action-link"
+        ><AppIcon name="chart" /> Borders</NuxtLink>
       </nav>
     </template>
   </section>
 </template>
 
 <style scoped>
-.back {
-  display: inline-block;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+.chart-record-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 650;
   color: var(--color-muted);
   text-decoration: none;
+  width: fit-content;
+}
+
+.back-link:hover {
+  color: var(--color-accent);
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .note {
-  margin: 0 0 1rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: var(--radius);
-  border-left: 3px solid var(--color-border);
-  background: var(--color-surface);
+  margin: 0;
+  padding: 0.875rem 1.125rem;
+  border-left: 4px solid var(--color-accent);
   font-size: 0.8125rem;
+  line-height: 1.5;
   color: var(--color-muted);
-  max-width: 44rem;
+}
+
+.note strong {
+  color: var(--color-text);
 }
 
 .note a {
   color: var(--color-accent);
+  font-weight: 650;
 }
 
 .panel {
-  background: var(--color-surface);
-  padding: 1rem 1.25rem;
+  padding: 1.125rem;
 }
 
-.panel h3 {
+.panel__title {
   margin: 0 0 0.75rem;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
-  font-weight: 600;
+  font-weight: 750;
 }
 
 .meta {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin: 0;
 }
 
-.meta > div {
+.meta-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -213,26 +236,33 @@ const playIsOlderRun = computed(
 
 .meta dt {
   font-size: 0.75rem;
+  font-weight: 600;
   color: var(--color-muted);
-  flex-shrink: 0;
 }
 
 .meta dd {
   margin: 0;
   font-size: 0.8125rem;
-  text-align: right;
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 1rem;
-  font-size: 0.875rem;
+  padding: 0.875rem 1.125rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
 }
 
-.links a {
+.action-link {
   color: var(--color-accent);
   text-decoration: none;
 }
+
+.action-link:hover {
+  text-decoration: underline;
+}
 </style>
+

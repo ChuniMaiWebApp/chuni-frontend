@@ -16,17 +16,36 @@
 :root {
   color-scheme: light dark;
 
-  /* --- Chrome (light) ------------------------------------------------- */
-  --color-bg: #f7f7f9;
+  /* --- Chrome (light) --------------------------------------------------
+   * The neutrals are pulled a few degrees toward violet rather than left grey.
+   * X-VERSE-X is a violet-magenta identity, and tinting the greys carries that
+   * everywhere without spending a saturated colour on it — which matters,
+   * because saturated violet is MASTER's, and most of this app is MASTER
+   * charts. Measured: text 17:1, muted 6.8:1, accent 5.8:1.
+   */
+  --color-bg: #f7f5fa;
   --color-surface: #ffffff;
-  --color-text: #16161a;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-accent: #4f46e5;
+  --color-surface-hover: #faf8fd;
+  --color-text: #17121e;
+  --color-muted: #5b5268;
+  --color-border: #e7e2ee;
+
+  /* Accent: Teal/Cyan tuned for 4.5:1+ contrast on light backgrounds */
+  --color-accent: #8b3dc9;
+  --color-accent-hover: #7431ab;
+  --color-accent-subtle: rgba(139, 61, 201, 0.12);
+
   --color-up: #16a34a;
   --color-down: #dc2626;
 
+  /* Dark Chip backing for game elements on Light theme */
+  --color-game-chip-bg: #161820;
+  --color-game-chip-border: #2a2d3c;
+  --color-game-chip-text: #f3f4f6;
+
+  --radius-sm: 6px;
   --radius: 10px;
+  --radius-lg: 16px;
 
   /* --- Game: rating tiers ---------------------------------------------
    * Sampled from rating/rating_<tier>_08.png. Do not adjust to taste; a
@@ -56,21 +75,29 @@
   --rank-s: #fbecad;
   --rank-sssp: #00bae8;
 
-  /* --- Game: difficulties --------------------------------------------- */
-  --difficulty-basic: #009f7b;
-  --difficulty-advanced: #f47900;
-  --difficulty-expert: #e92829;
-  --difficulty-master: #8c1be1;
-  --difficulty-ultima: #c80000;
-  --difficulty-worlds-end: #0b6ff3;
+
+  /* --- Game: lamps -----------------------------------------------------
+   * SEGA ships lamps as badge images with no CSS colour, so unlike rank and
+   * rating these are a choice. Set by the project owner: clear green, failed
+   * red, FULL COMBO yellow; ALL JUSTICE and AJC use --iridescent.
+   */
+  --lamp-clear: #32d74b;
+  --lamp-hard-clear: #6cff45;
+  --lamp-failed: #fd576b;
+  --lamp-full-combo: #ffd60a;
+  --lamp-full-chain: #a78bfa;
+
+  /* --- Game: difficulties ---------------------------------------------
+   * Deliberately absent. They live in app/utils/chunithm.ts, because ULTIMA
+   * needs two values — a near-black plate and a visible keyline — which a flat
+   * token cannot express. A duplicate set here went stale within a day: it
+   * still held the old wrong `#c80000` while the util had the measured
+   * `#141414`. One source, no drift.
+   */
 
   /*
    * The rainbow the game paints on rating 16+ and SSS+.
-   *
-   * Vertical, not a horizontal sweep: each glyph carries the whole spectrum
-   * top to bottom. Read scanline by scanline out of rating_rainbow_02/06/08.png
-   * and consistent across all three, so it is the asset's own ramp rather than
-   * an interpretation of it.
+   * Vertical gradient matching official SEGA scanlines.
    */
   --iridescent: linear-gradient(
     180deg,
@@ -84,59 +111,83 @@
     #41cae0 100%
   );
 
-  /*
-   * Keyline behind the rainbow glyphs.
-   *
-   * The ramp is built for a dark backdrop; on white its gold and lime stops
-   * measure barely 1.5:1. A dark keyline restores the edge without touching
-   * the hues, which is the same trick the game uses on its own light panels.
-   * Dark mode needs none — bright on near-black already separates.
-   */
-  --iridescent-outline: #2a2118;
+  /* Keyline behind rainbow glyphs for light mode readability */
+  --iridescent-outline: #111827;
 }
 
-/* Dark, when the system asks for it and no explicit choice is stored. */
+/* Dark, when system prefers dark and no explicit choice is stored. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --color-bg: #0e0e11;
-    --color-surface: #17171c;
-    --color-text: #f4f4f5;
-    --color-muted: #9ca3af;
-    --color-border: #27272e;
-    --color-accent: #818cf8;
-    --color-up: #4ade80;
+    --color-bg: #0d0a12;
+    --color-surface: #16121d;
+    --color-surface-hover: #1e1828;
+    --color-text: #f2eef7;
+    --color-muted: #9d94ab;
+    --color-border: #2a2334;
+
+    /* Accent: a softened X-VERSE-X orchid. The brand's own #b700ff sits too
+       close to MASTER purple to use raw, and the neon cyan tried before it
+       measured 12.3:1 on this backdrop — technically fine, visibly glaring.
+       This lands at 7.7:1 dark and 5.8:1 light. */
+    --color-accent: #d98cff;
+    --color-accent-hover: #e9b4ff;
+    --color-accent-subtle: rgba(217, 140, 255, 0.15);
+
+    --color-up: #34d399;
     --color-down: #f87171;
+
+    --color-game-chip-bg: #111218;
+    --color-game-chip-border: #232633;
+    --color-game-chip-text: #f3f4f6;
+
     --iridescent-outline: transparent;
   }
 }
 
-/* Dark, chosen explicitly. Kept identical to the block above by hand: CSS has
-   no way to share a declaration set between a media query and a selector. */
+/* Dark theme (Explicit) */
 :root[data-theme='dark'] {
-  --color-bg: #0e0e11;
-  --color-surface: #17171c;
-  --color-text: #f4f4f5;
-  --color-muted: #9ca3af;
-  --color-border: #27272e;
-  --color-accent: #818cf8;
-  --color-up: #4ade80;
+  --color-bg: #0d0a12;
+  --color-surface: #16121d;
+  --color-surface-hover: #1e1828;
+  --color-text: #f2eef7;
+  --color-muted: #9d94ab;
+  --color-border: #2a2334;
+
+  --color-accent: #d98cff;
+  --color-accent-hover: #e9b4ff;
+  --color-accent-subtle: rgba(217, 140, 255, 0.15);
+
+  --color-up: #34d399;
   --color-down: #f87171;
+
+  --color-game-chip-bg: #111218;
+  --color-game-chip-border: #232633;
+  --color-game-chip-text: #f3f4f6;
+
   --iridescent-outline: transparent;
 }
 
-/* Light, chosen explicitly, on a system set to dark. Values repeat `:root`
-   rather than relying on the cascade, which the media query would otherwise
-   have already overridden. */
+/* Light theme (Explicit) */
 :root[data-theme='light'] {
-  --color-bg: #f7f7f9;
+  --color-bg: #f7f5fa;
   --color-surface: #ffffff;
-  --color-text: #16161a;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-accent: #4f46e5;
+  --color-surface-hover: #faf8fd;
+  --color-text: #17121e;
+  --color-muted: #5b5268;
+  --color-border: #e7e2ee;
+
+  --color-accent: #8b3dc9;
+  --color-accent-hover: #7431ab;
+  --color-accent-subtle: rgba(139, 61, 201, 0.12);
+
   --color-up: #16a34a;
   --color-down: #dc2626;
-  --iridescent-outline: #2a2118;
+
+  --color-game-chip-bg: #161820;
+  --color-game-chip-border: #2a2d3c;
+  --color-game-chip-text: #f3f4f6;
+
+  --iridescent-outline: #111827;
 }
 
 *,
@@ -149,31 +200,78 @@ html,
 body {
   margin: 0;
   padding: 0;
+  min-height: 100vh;
 }
 
+/*
+ * Type.
+ *
+ * Still the system stack — a self-hosted face covering kana and kanji runs to
+ * megabytes, and this app is opened on arcade wifi. What was missing was any
+ * Japanese fallback at all: song titles fell through to whatever the browser
+ * picked, so 天体観測 and its artist could render in two different faces on the
+ * same line. The Japanese families below are named on purpose, in the order
+ * each platform actually has them.
+ */
 body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue',
+    /* Japanese, in platform order: macOS, Windows, then a common webfont. */
+    'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic',
+    'Noto Sans JP', Meiryo,
     Arial, sans-serif;
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+/*
+ * Headings are tightened rather than enlarged. Screen after screen here is a
+ * list, and a heading that competes with the numbers under it is the mistake
+ * this replaced — the Best 50 title used to outweigh the rating itself.
+ */
 h1,
 h2,
-h3 {
-  line-height: 1.25;
-  letter-spacing: -0.02em;
+h3,
+h4 {
+  line-height: 1.2;
+  letter-spacing: -0.021em;
   margin: 0 0 0.5rem;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.0625rem;
+}
+
+h3 {
+  font-size: 0.9375rem;
+}
+
+/*
+ * Every figure in this app is compared against the one above it — scores,
+ * ratings, notecounts, percentages. Proportional digits make those columns
+ * ragged, so numerals line up by default and opt out rather than in.
+ */
+.tabular,
+input[type='number'],
+table {
+  font-variant-numeric: tabular-nums;
 }
 
 code {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.875em;
-  background: var(--color-bg);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.4rem;
 }

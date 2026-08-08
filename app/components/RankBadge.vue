@@ -33,41 +33,41 @@ const isTop = computed(() => props.rank >= Rank.S)
 
 <style scoped>
 .rank {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--rank-colour);
   border-radius: 999px;
   color: var(--rank-colour);
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: 0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  background: var(--color-game-chip-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rank-colour) 20%, transparent);
 }
 
 .rank--sm {
   font-size: 0.625rem;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.45rem;
 }
 
 .rank--md {
   font-size: 0.75rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.6rem;
 }
 
 /*
- * S and above sit on their own colour rather than outlined in it. The game
- * marks the jump from AAA to S far more strongly than the steps within either
- * group, and this is the same idea without inventing hues.
+ * S and above sit on a highlighted backing.
  */
 .rank--top {
-  background: color-mix(in srgb, var(--rank-colour) 18%, transparent);
-  border-color: color-mix(in srgb, var(--rank-colour) 60%, transparent);
-  /* The S-tier cream is nearly white; on a light page it needs a darker ink
-     than the badge colour to stay readable. */
-  color: color-mix(in srgb, var(--rank-colour) 70%, var(--color-text) 30%);
+  background: color-mix(in srgb, var(--rank-colour) 22%, var(--color-game-chip-bg) 78%);
+  border-color: color-mix(in srgb, var(--rank-colour) 70%, transparent);
+  color: color-mix(in srgb, var(--rank-colour) 85%, #ffffff 15%);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--rank-colour) 25%, transparent);
 }
 
-/* SSS+ gets the same vertical ramp as rating 16+ — the game's two multi-hue
-   values are painted alike. */
+/* SSS+ gets the same vertical ramp as rating 16+ */
 .rank--iridescent {
   background: var(--iridescent);
   -webkit-background-clip: text;
@@ -77,5 +77,7 @@ const isTop = computed(() => props.rank >= Rank.S)
   paint-order: stroke fill;
   -webkit-text-stroke: 0.055em var(--iridescent-outline);
   border-color: #28ffbd;
+  box-shadow: 0 0 8px rgba(40, 255, 189, 0.4);
 }
 </style>
+

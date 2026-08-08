@@ -303,6 +303,8 @@ export type LinkedGateStatus =
 export interface LinkedGateProgress {
   gate: string
   status: LinkedGateStatus
+  /** The game's own badge art for this gate in this state. */
+  badgeUrl: string | null
   /** Present only for `unknown`, so the badge can be identified and added. */
   unrecognisedBadge?: string
 }

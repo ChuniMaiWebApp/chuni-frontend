@@ -28,7 +28,11 @@ const colour = computed(() =>
 <template>
   <span
     class="rating"
-    :class="[`rating--${size}`, `rating--${kind}`, { 'rating--iridescent': tier === 'rainbow' }]"
+    :class="[
+      `rating--${size}`,
+      `rating--${kind}`,
+      { 'rating--iridescent': tier === 'rainbow' },
+    ]"
     :style="tier === 'rainbow' ? undefined : { color: colour }"
     :title="tier ? `Rating band: ${tier}` : undefined"
   >{{ rating === null ? '—' : rating.toFixed(2) }}</span>
@@ -36,43 +40,54 @@ const colour = computed(() =>
 
 <style scoped>
 .rating {
+  display: inline-flex;
+  align-items: center;
   font-variant-numeric: tabular-nums;
-  font-weight: 650;
-  /* The tier colours are tuned for a dark backdrop; a hairline of the page
-     colour keeps the palest ones (platinum, silver) legible on light too. */
-  text-shadow: 0 0 1px color-mix(in srgb, var(--color-bg) 70%, transparent);
+  font-weight: 700;
+  line-height: 1;
+  /* A hairline of the page colour keeps the palest tiers — platinum, silver —
+     from dissolving into a light background. */
+  text-shadow: 0 0 2px color-mix(in srgb, var(--color-bg) 75%, transparent);
 }
 
-.rating--sm { font-size: 0.8125rem; }
-.rating--md { font-size: 1rem; }
-.rating--lg { font-size: 2.25rem; letter-spacing: -0.02em; }
-
-/* A player's overall rating is the headline number; a play rating is one row
-   in a list. Weight separates them where colour cannot. */
-.rating--play { font-weight: 600; }
+.rating--sm {
+  font-size: 0.8125rem;
+}
+.rating--md {
+  font-size: 1rem;
+}
+.rating--lg {
+  font-size: 2.25rem;
+  letter-spacing: -0.02em;
+}
 
 /*
- * Rating 16+, painted the way the game paints it.
+ * A player's overall rating and a single play's rating differ in weight and in
+ * where they sit, not in decoration.
  *
- * The ramp runs top to bottom through the whole glyph — pink, gold, lime,
- * green, mint, cyan — not as a sweep across the number. Measured out of
- * rating_rainbow_*.png; see design/00-game-colours.md.
- *
- * Declared here rather than on a global class so it carries this component's
- * scope attribute. A plain class loses on specificity to any `.something span`
- * rule in a parent page, which is exactly what silently reverted this to grey
- * once already.
+ * The overall one used to be boxed in a dark chip with a border. On a card that
+ * already has a border and a heading, that was a third frame around one number
+ * — and it made the headline read worse than the plain 13px version on every
+ * score card.
  */
+.rating--player {
+  font-weight: 800;
+}
+
+.rating--play {
+  font-weight: 650;
+}
+
+/* Rating 16+, vertical iridescent ramp */
 .rating--iridescent {
   background: var(--iridescent);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  /* Drawn behind the fill, so the keyline adds an edge rather than eating the
-     glyph. Transparent in dark mode — see --iridescent-outline. */
   paint-order: stroke fill;
   -webkit-text-stroke: 0.055em var(--iridescent-outline);
   text-shadow: none;
 }
 </style>
+

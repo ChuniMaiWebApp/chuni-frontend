@@ -6,7 +6,7 @@ import type {
 } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Improve' })
+useHead({ title: 'ChunithmQueue · Improvement Targets' })
 
 const api = useApi()
 
@@ -94,16 +94,19 @@ const runRecommend = async () => {
 </script>
 
 <template>
-  <section>
-    <h1>Improve</h1>
-    <p class="lead">
-      Each panel reads your current rating breakdown from CHUNITHM-NET, so they
-      load on demand rather than all at once.
-    </p>
+  <section class="improve-page">
+    <header class="page-header">
+      <div>
+        <h1>Rating Improvement Engine</h1>
+        <p class="lead">
+          Calculate score rating gains, test target ceilings, and generate chart play recommendations.
+        </p>
+      </div>
+    </header>
 
     <!-- What if -->
     <article class="card">
-      <h2>What if I score…</h2>
+      <h2 class="card__title"><AppIcon name="bolt" /> What if I score…</h2>
       <p class="hint">
         Enter the play rating a new score would be worth. If you already have a
         score on that chart, enter its current play rating too — without it the
@@ -111,81 +114,86 @@ const runRecommend = async () => {
       </p>
 
       <form class="fields" @submit.prevent="runWhatIf">
-        <label>
-          New play rating
+        <label class="field-item">
+          <span>New play rating</span>
           <input v-model.number="playRating" type="number" min="0" max="20" step="0.01">
         </label>
-        <label>
-          Replacing (optional)
+        <label class="field-item">
+          <span>Replacing (optional)</span>
           <input v-model.number="replacing" type="number" min="0" max="20" step="0.01">
         </label>
-        <button type="submit" :disabled="whatIfBusy">
-          {{ whatIfBusy ? 'Checking…' : 'Check' }}
+        <button type="submit" class="btn btn--primary" :disabled="whatIfBusy">
+          {{ whatIfBusy ? 'Checking…' : 'Calculate Gain' }}
         </button>
       </form>
 
       <p v-if="whatIfError" class="error">{{ whatIfError }}</p>
 
       <div v-else-if="whatIf" class="readout">
-        <div>
-          <span>Rating now</span><strong>{{ whatIf.currentRating.toFixed(2) }}</strong>
+        <div class="readout__item">
+          <span class="readout__label">Rating now</span>
+          <strong class="readout__val tabular">{{ whatIf.currentRating.toFixed(2) }}</strong>
         </div>
-        <div>
-          <span>After</span>
-          <strong :data-good="whatIf.counts">{{ whatIf.newRating.toFixed(2) }}</strong>
+        <div class="readout__item">
+          <span class="readout__label">Rating After</span>
+          <strong class="readout__val tabular" :data-good="whatIf.counts">{{ whatIf.newRating.toFixed(2) }}</strong>
         </div>
-        <div>
-          <span>Gain</span><strong>+{{ whatIf.delta.toFixed(4) }}</strong>
+        <div class="readout__item">
+          <span class="readout__label">Net Gain</span>
+          <strong class="readout__val readout__val--gain tabular">+{{ whatIf.delta.toFixed(4) }}</strong>
         </div>
-        <div v-if="whatIf.displaces !== null">
-          <span>{{ whatIf.counts ? 'Pushes out' : 'Must beat' }}</span>
-          <strong>{{ whatIf.displaces.toFixed(2) }}</strong>
+        <div v-if="whatIf.displaces !== null" class="readout__item">
+          <span class="readout__label">{{ whatIf.counts ? 'Pushes out' : 'Must beat' }}</span>
+          <strong class="readout__val tabular">{{ whatIf.displaces.toFixed(2) }}</strong>
         </div>
       </div>
 
-      <p v-if="whatIf && !whatIf.counts" class="hint">
-        That score would not count — it does not beat the weakest play already
-        in your rating.
+      <p v-if="whatIf && !whatIf.counts" class="hint hint--warning">
+        <AppIcon name="warning" /> That score would not count — it does not beat the weakest play already in your rating.
       </p>
     </article>
 
     <!-- Reach -->
     <article class="card">
-      <h2>Reach a target rating</h2>
+      <h2 class="card__title"><AppIcon name="target" /> Reach a target rating</h2>
       <p class="hint">
         Shows the play rating <em>every</em> counted slot would need. That is a
         ceiling rather than a plan, but it answers whether a target is close.
       </p>
 
       <form class="fields" @submit.prevent="runReach">
-        <label>
-          Target rating
+        <label class="field-item">
+          <span>Target rating</span>
           <input v-model.number="target" type="number" min="0" max="20" step="0.01">
         </label>
-        <button type="submit" :disabled="reachBusy">
-          {{ reachBusy ? 'Working…' : 'Show' }}
+        <button type="submit" class="btn btn--primary" :disabled="reachBusy">
+          {{ reachBusy ? 'Working…' : 'Calculate Required Floor' }}
         </button>
       </form>
 
       <p v-if="reachError" class="error">{{ reachError }}</p>
 
       <template v-else-if="reach">
-        <p v-if="reach.alreadyReached" class="hint">
-          Already there — your rating is {{ reach.currentRating.toFixed(2) }}.
+        <p v-if="reach.alreadyReached" class="hint hint--success">
+          Already reached — your current rating is {{ reach.currentRating.toFixed(2) }}.
         </p>
 
         <div v-else class="readout">
-          <div>
-            <span>Rating now</span><strong>{{ reach.currentRating.toFixed(2) }}</strong>
+          <div class="readout__item">
+            <span class="readout__label">Rating now</span>
+            <strong class="readout__val tabular">{{ reach.currentRating.toFixed(2) }}</strong>
           </div>
-          <div><span>Target</span><strong>{{ reach.target.toFixed(2) }}</strong></div>
-          <div>
-            <span>Every slot needs</span>
-            <strong>{{ reach.requiredPlayRating?.toFixed(2) }}</strong>
+          <div class="readout__item">
+            <span class="readout__label">Target</span>
+            <strong class="readout__val tabular">{{ reach.target.toFixed(2) }}</strong>
           </div>
-          <div v-if="reach.floors.best !== null">
-            <span>Best 30 floor</span>
-            <strong>{{ reach.floors.best.toFixed(2) }}</strong>
+          <div class="readout__item">
+            <span class="readout__label">Every slot needs</span>
+            <strong class="readout__val readout__val--gain tabular">{{ reach.requiredPlayRating?.toFixed(2) }}</strong>
+          </div>
+          <div v-if="reach.floors.best !== null" class="readout__item">
+            <span class="readout__label">Best 30 floor</span>
+            <strong class="readout__val tabular">{{ reach.floors.best.toFixed(2) }}</strong>
           </div>
         </div>
       </template>
@@ -193,19 +201,17 @@ const runRecommend = async () => {
 
     <!-- Recommend -->
     <article class="card">
-      <h2>What should I play next</h2>
+      <h2 class="card__title"><AppIcon name="music" /> What should I play next?</h2>
       <p class="hint">
-        Charts around your rating floor, with the score each one needs to start
-        counting. Anything below the floor cannot raise your rating however well
-        it is played.
+        Suggests charts around your rating floor with the exact score required to start counting toward your total rating.
       </p>
 
       <form class="fields" @submit.prevent="runRecommend">
-        <label>
-          How many
+        <label class="field-item">
+          <span>Number of suggestions</span>
           <input v-model.number="count" type="number" min="1" max="10" step="1">
         </label>
-        <button type="submit" :disabled="recommendBusy">
+        <button type="submit" class="btn btn--primary" :disabled="recommendBusy">
           {{ recommendBusy ? 'Picking…' : 'Suggest charts' }}
         </button>
       </form>
@@ -214,33 +220,39 @@ const runRecommend = async () => {
 
       <template v-else-if="recommend">
         <p class="hint">
-          Rating floor {{ recommend.ratingFloor.toFixed(2) }} — a play must beat
-          that to count.
+          Rating floor: <strong>{{ recommend.ratingFloor.toFixed(2) }}</strong> — a new play must beat this play rating to count.
         </p>
 
         <ul class="suggestions">
           <li
             v-for="entry in recommend.recommendations"
             :key="`${entry.song.id}-${entry.difficultyName}`"
-            :style="{ '--difficulty': difficultyColour(entry.difficulty) }"
+            class="suggestion-item"
+            :style="{ '--difficulty': difficultyInk(entry.difficulty) }"
           >
             <img
               v-if="entry.song.jacketUrl"
               :src="entry.song.jacketUrl"
               alt=""
-              width="48"
-              height="48"
+              width="52"
+              height="52"
               loading="lazy"
+              class="suggestion__jacket"
             >
+            <div v-else class="suggestion__jacket-placeholder" />
+
             <div class="suggestion__body">
-              <NuxtLink :to="`/songs/${entry.song.id}`">{{ entry.song.title }}</NuxtLink>
+              <NuxtLink :to="`/songs/${entry.song.id}`" class="suggestion__title">
+                {{ entry.song.title }}
+              </NuxtLink>
               <p class="suggestion__chart">
                 {{ entry.difficultyName }} {{ entry.const }}
               </p>
             </div>
+
             <div class="suggestion__target">
-              <span>Score needed</span>
-              <strong>{{ entry.requiredScore.toLocaleString('en-US') }}</strong>
+              <span class="suggestion__target-label">Score needed</span>
+              <strong class="suggestion__target-val tabular">{{ entry.requiredScore.toLocaleString('en-US') }}</strong>
             </div>
           </li>
         </ul>
@@ -250,95 +262,108 @@ const runRecommend = async () => {
 </template>
 
 <style scoped>
+.improve-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+}
+
 .lead {
   color: var(--color-muted);
-  margin-bottom: 1.5rem;
+  font-size: 0.84375rem;
+  margin: 0;
 }
 
 .card {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   padding: 1.25rem;
-  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
-.card h2 {
-  font-size: 1rem;
+.card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.125rem;
+  font-weight: 750;
   margin: 0 0 0.4rem;
+  color: var(--color-text);
 }
 
 .fields {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.75rem;
-  margin: 0.875rem 0;
+  gap: 0.875rem;
+  margin: 1rem 0;
 }
 
-.fields label {
+.field-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
   font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
+  flex: 1 1 10rem;
 }
 
-.fields input {
+.field-item input {
   font: inherit;
   font-size: 0.9375rem;
-  text-transform: none;
-  letter-spacing: 0;
   color: var(--color-text);
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.65rem;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--color-bg);
-  min-width: 9rem;
-}
-
-.fields button {
-  font: inherit;
-  font-weight: 600;
-  padding: 0.45rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background: var(--color-accent);
-  color: #fff;
-  cursor: pointer;
-}
-
-.fields button:disabled {
-  opacity: 0.6;
-  cursor: progress;
+  width: 100%;
 }
 
 .readout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: 0.75rem;
-  padding-top: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
   border-top: 1px solid var(--color-border);
 }
 
-.readout div {
+.readout__item {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
 }
 
-.readout span {
+.readout__label {
   font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
 }
 
-.readout strong {
+.readout__val {
   font-size: 1.125rem;
-  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.readout__val--gain {
+  color: var(--color-accent);
 }
 
 .readout [data-good='true'] {
@@ -347,27 +372,36 @@ const runRecommend = async () => {
 
 .suggestions {
   list-style: none;
-  margin: 0.75rem 0 0;
+  margin: 1rem 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
-.suggestions li {
+.suggestion-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.875rem;
+  padding: 0.625rem 0.875rem;
   border: 1px solid var(--color-border);
-  border-left: 3px solid var(--difficulty);
-  border-radius: 8px;
+  border-left: 4px solid var(--difficulty);
+  border-radius: var(--radius);
   background: var(--color-bg);
 }
 
-.suggestions img {
-  border-radius: 6px;
+.suggestion__jacket,
+.suggestion__jacket-placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
+  flex-shrink: 0;
+}
+
+.suggestion__jacket-placeholder {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
 }
 
 .suggestion__body {
@@ -375,44 +409,75 @@ const runRecommend = async () => {
   min-width: 0;
 }
 
-.suggestion__body a {
+.suggestion__title {
   color: var(--color-text);
   text-decoration: none;
-  font-weight: 550;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.suggestion__title:hover {
+  color: var(--color-accent);
 }
 
 .suggestion__chart {
-  margin: 0.1rem 0 0;
+  margin: 0.15rem 0 0;
   font-size: 0.75rem;
   color: var(--difficulty);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .suggestion__target {
   text-align: right;
 }
 
-.suggestion__target span {
+.suggestion__target-label {
   display: block;
   font-size: 0.625rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
 }
 
-.suggestion__target strong {
-  font-variant-numeric: tabular-nums;
+.suggestion__target-val {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text);
 }
 
 .hint {
   margin: 0.5rem 0 0;
-  font-size: 0.75rem;
-  line-height: 1.5;
+  font-size: 0.78125rem;
+  line-height: 1.4;
   color: var(--color-muted);
 }
 
+.hint--warning { color: var(--rating-orange); }
+.hint--success { color: var(--color-up); font-weight: 600; }
+
 .error {
   color: var(--color-down);
+  font-weight: 600;
   font-size: 0.875rem;
 }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  cursor: pointer;
+  border: none;
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: #ffffff;
+}
 </style>
+

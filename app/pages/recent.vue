@@ -2,7 +2,7 @@
 import type { CaptureResult, RecentScore } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Recent' })
+useHead({ title: 'ChunithmQueue · Recent Plays' })
 
 const { data: scores, error, pending, refresh } = await useApiFetch<RecentScore[]>(
   '/chunithm/records/recent',
@@ -50,45 +50,58 @@ const capture = async () => {
 </script>
 
 <template>
-  <section>
+  <section class="recent-page">
     <header class="page-header">
-      <h1>Recent plays</h1>
+      <div>
+        <h1>Recent Plays</h1>
+        <p class="lead">
+          CHUNITHM-NET only serves judgements for these 50 tracks. Capturing them
+          keeps the breakdown on your
+          <NuxtLink to="/best50">Best 50</NuxtLink> after the playlog has moved on.
+        </p>
+      </div>
+
       <div class="page-header__actions">
-        <button type="button" :disabled="capturing" @click="capture()">
+        <button type="button" class="btn btn--primary" :disabled="capturing" @click="capture()">
+          <AppIcon name="download" />
           {{ capturing ? 'Capturing…' : 'Capture judgements' }}
         </button>
-        <button type="button" :disabled="pending" @click="refresh()">
+        <button type="button" class="btn btn--secondary" :disabled="pending" @click="refresh()">
+          <AppIcon name="refresh" />
           {{ pending ? 'Loading…' : 'Refresh' }}
         </button>
       </div>
     </header>
 
-    <p class="lead">
-      CHUNITHM-NET only serves judgements for these 50 tracks. Capturing them
-      keeps the breakdown on your
-      <NuxtLink to="/best50">Best 50</NuxtLink> after the playlog has moved on.
-    </p>
+    <div v-if="captureError" class="capture capture--error">
+      <AppIcon name="warning" /> {{ captureError }}
+    </div>
 
-    <p v-if="captureError" class="capture capture--error">{{ captureError }}</p>
-
-    <p v-else-if="captured" class="capture">
-      Scanned {{ captured.scanned }} plays:
-      {{ captured.stored }} newly stored,
-      {{ captured.alreadyKnown }} already known.
-    </p>
+    <div v-else-if="captured" class="capture">
+      Scanned <strong>{{ captured.scanned }}</strong> plays:
+      <strong>{{ captured.stored }}</strong> newly stored,
+      <strong>{{ captured.alreadyKnown }}</strong> already known.
+    </div>
 
     <ApiError v-if="error" :error="error" />
 
+    <AppSpinner
+      v-else-if="pending && !scores"
+      label="Reading your playlog from CHUNITHM-NET…"
+    />
+
     <p v-else-if="!scores?.length" class="empty">
-      No plays recorded yet.
+      No recent plays recorded yet. Play a credit at the arcade and refresh!
     </p>
 
     <ul v-else class="list">
       <li v-for="(score, index) in scores" :key="index">
-        <ScoreCard :score="score" />
-
-        <NuxtLink :to="detailLink(index, score)" class="detail-button">
-          Judgements and note accuracy →
+        <NuxtLink
+          :to="detailLink(index, score)"
+          class="list__link"
+          :title="`Judgements and note accuracy for ${score.song.title}`"
+        >
+          <ScoreCard :score="score" />
         </NuxtLink>
       </li>
     </ul>
@@ -96,27 +109,76 @@ const capture = async () => {
 </template>
 
 <style scoped>
+.recent-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
 }
 
 .page-header h1 {
-  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
 }
 
-.page-header button {
-  font: inherit;
-  font-size: 0.875rem;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+.page-header__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.lead {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+.lead a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.capture {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--color-accent);
   background: var(--color-surface);
+  font-size: 0.8125rem;
   color: var(--color-text);
-  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.capture--error {
+  border-left-color: var(--color-down);
+  color: var(--color-down);
+}
+
+/* The whole card is the link; the hover outline is the only affordance it
+   needs, and it costs no height. */
+.list__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.list__link:hover {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.list__link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .list {
@@ -125,57 +187,44 @@ const capture = async () => {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.875rem;
 }
 
-.detail-button {
-  display: inline-block;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  color: var(--color-muted);
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 650;
   text-decoration: none;
+  cursor: pointer;
+  border: none;
 }
 
-.detail-button:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+.btn--primary {
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
-.page-header__actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.lead {
-  margin: -0.75rem 0 1rem;
-  max-width: 44rem;
-  font-size: 0.8125rem;
-  color: var(--color-muted);
-}
-
-.lead a {
-  color: var(--color-accent);
-}
-
-.capture {
-  margin: 0 0 1rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  border-left: 3px solid var(--color-accent);
+.btn--secondary {
   background: var(--color-surface);
-  font-size: 0.8125rem;
-  color: var(--color-muted);
-}
-
-.capture--error {
-  border-left-color: var(--color-down);
-  color: var(--color-down);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 .empty {
   color: var(--color-muted);
+  font-size: 0.875rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+@media (max-width: 48rem) {
+  .page-header {
+    flex-direction: column;
+  }
 }
 </style>
+
