@@ -8,14 +8,14 @@ const router = useRouter()
 
 // The query lives in the URL so a search can be shared or reloaded.
 const query = ref((route.query.q as string) ?? '')
-const availableOnly = ref(route.query.available !== 'false')
+const intlOnly = ref(route.query.available === 'true')
 
 const { data: results, error, status } = await useApiFetch<SongSearchResult[]>(
   '/songs/search',
   {
     query: computed(() => ({
       q: query.value,
-      available: availableOnly.value,
+      available: intlOnly.value ? 'true' : 'false',
     })),
     // Nothing to search for yet on first paint.
     immediate: Boolean(query.value),
@@ -32,7 +32,7 @@ const runSearch = () => {
     void router.replace({
       query: {
         q: query.value || undefined,
-        available: availableOnly.value ? undefined : 'false',
+        available: intlOnly.value ? 'true' : undefined,
       },
     })
     void refreshNuxtData()
@@ -65,8 +65,8 @@ onBeforeUnmount(() => {
         @input="runSearch"
       >
       <label class="toggle-field">
-        <input v-model="availableOnly" type="checkbox" @change="runSearch">
-        <span>Hide removed songs</span>
+        <input v-model="intlOnly" type="checkbox" @change="runSearch">
+        <span>International only</span>
       </label>
     </form>
 
