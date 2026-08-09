@@ -25,12 +25,13 @@ const props = defineProps<{
 }>()
 
 const isUltima = computed(() => props.difficulty === Difficulty.ULTIMA)
+const isWorldsEnd = computed(() => props.difficulty === Difficulty.WORLDS_END)
 </script>
 
 <template>
   <span
     class="diff"
-    :class="[`diff--${size ?? 'md'}`, { 'diff--ultima': isUltima }]"
+    :class="[`diff--${size ?? 'md'}`, { 'diff--ultima': isUltima, 'diff--worlds-end': isWorldsEnd }]"
     :style="{ '--ink': difficultyInk(difficulty) }"
   >
     <span class="diff__name">{{ difficultyLabel(difficulty) }}</span>
@@ -117,5 +118,22 @@ const isUltima = computed(() => props.difficulty === Difficulty.ULTIMA)
 
 :root[data-theme='dark'] .diff--ultima {
   color: #ded5dd;
+}
+
+.diff--worlds-end {
+  background: linear-gradient(
+    135deg,
+    #ff0055 0%,
+    #ff5500 16%,
+    #ffcc00 33%,
+    #00cc44 50%,
+    #00ccff 66%,
+    #3333ff 83%,
+    #cc00ff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 850;
 }
 </style>

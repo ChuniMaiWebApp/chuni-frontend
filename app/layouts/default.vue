@@ -38,7 +38,7 @@ const year = new Date().getFullYear()
 .app-main {
   flex: 1;
   width: 100%;
-  max-width: 64rem;
+  max-width: 100rem;
   margin: 0 auto;
   padding: 1.5rem 1.25rem 3rem;
 }

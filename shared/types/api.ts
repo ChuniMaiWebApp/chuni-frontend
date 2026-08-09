@@ -437,6 +437,15 @@ export interface SongSearchResult extends SongSummary {
   /** Which alias matched, when the hit did not come from the title. */
   matchedAlias: string | null
   score: number
+  charts?: ChartView[]
+}
+
+export interface SongSearchResponse {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  songs: SongSearchResult[]
 }
 
 /**

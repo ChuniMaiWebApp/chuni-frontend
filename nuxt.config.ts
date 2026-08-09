@@ -4,7 +4,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // 3000 is taken by Supabase Studio, 3001 by PostgREST, 3333 by the API.
-  devServer: { port: 3100 },
+  devServer: { host: '0.0.0.0', port: 3100 },
+
+  vite: {
+    server: {
+      allowedHosts: true,
+    },
+  },
 
   future: { compatibilityVersion: 4 },
 
@@ -14,12 +20,16 @@ export default defineNuxtConfig({
 
   typescript: { strict: true, typeCheck: false },
 
+  routeRules: {
+    '/api/**': { proxy: 'http://localhost:3333/api/**' },
+  },
+
   runtimeConfig: {
     // Server-only secrets go here (override with NUXT_* env vars).
 
     public: {
       // Override with NUXT_PUBLIC_API_BASE
-      apiBase: 'http://localhost:3333/api/v1',
+      apiBase: '/api/v1',
     },
   },
 
