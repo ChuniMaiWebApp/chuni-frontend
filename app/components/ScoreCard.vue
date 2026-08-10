@@ -71,20 +71,22 @@ const overpowerPercent = computed(() => {
       </div>
 
       <div class="score__row score__row--meta">
-        <DifficultyLabel
-          :difficulty="score.chart.difficulty"
-          :level="chartLevelValue(score)"
-          size="sm"
-        />
+        <div class="score__badges">
+          <DifficultyLabel
+            :difficulty="score.chart.difficulty"
+            :level="chartLevelValue(score)"
+            size="sm"
+          />
 
-        <RankBadge :rank="score.rank" size="sm" />
+          <RankBadge :rank="score.rank" size="sm" />
 
-        <LampBadge
-          v-for="lamp in lamps"
-          :key="lamp.label"
-          :lamp="lamp"
-          size="sm"
-        />
+          <LampBadge
+            v-for="lamp in lamps"
+            :key="lamp.label"
+            :lamp="lamp"
+            size="sm"
+          />
+        </div>
 
         <span class="score__worth tabular">
           <RatingValue :rating="score.rating" size="sm" />
@@ -106,6 +108,7 @@ const overpowerPercent = computed(() => {
   border-left: 3px solid var(--difficulty);
   border-radius: 6px;
   background: var(--color-surface);
+  overflow: hidden;
 }
 
 .score__jacket {
@@ -127,6 +130,7 @@ const overpowerPercent = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  overflow: hidden;
 }
 
 .score__row {
@@ -138,7 +142,19 @@ const overpowerPercent = computed(() => {
 
 .score__row--meta {
   align-items: center;
-  gap: 0.3rem;
+  justify-content: space-between;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.score__badges {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
 }
 
 .score__index {
@@ -179,8 +195,9 @@ const overpowerPercent = computed(() => {
   margin-left: auto;
   display: inline-flex;
   align-items: baseline;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .score__op {

@@ -4,12 +4,16 @@ import type { StoredScore } from '~~/shared/types/api'
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'ChunithmQueue · All Personal Bests' })
 
-const level = ref('')
-const difficulty = ref('')
-const sort = ref('rating')
-const order = ref<'asc' | 'desc'>('desc')
+const route = useRoute()
 
-const { data: scores, error, status, refresh } = await useApiFetch<StoredScore[]>(
+const level = ref((route.query.level as string) ?? '')
+const difficulty = ref((route.query.difficulty as string) ?? '')
+const sort = ref((route.query.sort as string) ?? 'rating')
+const order = ref<'asc' | 'desc'>(((route.query.order as string) === 'asc') ? 'asc' : 'desc')
+const page = ref(Number(route.query.page as string) || 1)
+const pageSize = ref(Number(route.query.pageSize as string) || 36)
+
+const { data: rawScores, error, status, refresh } = await useApiFetch<StoredScore[]>(
   '/records/top',
   {
     query: computed(() => ({
@@ -17,10 +21,53 @@ const { data: scores, error, status, refresh } = await useApiFetch<StoredScore[]
       difficulty: difficulty.value || undefined,
       sort: sort.value,
       order: order.value,
-      limit: 100,
+      limit: 5000,
     })),
   },
 )
+
+const allScores = computed(() => rawScores.value ?? [])
+const totalCount = computed(() => allScores.value.length)
+const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value) || 1)
+
+const startItem = computed(() => (totalCount.value === 0 ? 0 : (page.value - 1) * pageSize.value + 1))
+const endItem = computed(() => Math.min(page.value * pageSize.value, totalCount.value))
+
+const paginatedScores = computed(() => {
+  const start = (page.value - 1) * pageSize.value
+  return allScores.value.slice(start, start + pageSize.value)
+})
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = page.value
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+  const pages: (number | string)[] = [1]
+  if (current > 3) pages.push('...')
+
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  if (current < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
+const goToPage = (p: number) => {
+  if (p < 1 || p > totalPages.value) return
+  page.value = p
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const applyFilters = () => {
+  page.value = 1
+  refresh()
+}
 
 const SORTS = [
   { value: 'rating', label: 'Play rating' },
@@ -37,6 +84,7 @@ const filterSummary = computed(() => {
   const parts = [
     SORTS.find(option => option.value === sort.value)?.label ?? sort.value,
     order.value === 'desc' ? 'high to low' : 'low to high',
+    `${pageSize.value} / page`,
   ]
 
   if (level.value.trim()) parts.unshift(`Level ${level.value.trim()}`)
@@ -59,11 +107,7 @@ const filterSummary = computed(() => {
       </div>
     </header>
 
-    <!--
-      Folded away by default. Four fields and a button took a third of a phone
-      screen before a single score appeared, and the default view — every best
-      sorted by play rating — is the one most visits want.
-    -->
+    <!-- Filter & Sort Panel -->
     <details class="filter-panel card">
       <summary class="filter-panel__summary">
         <AppIcon name="filter" :size="15" />
@@ -71,40 +115,51 @@ const filterSummary = computed(() => {
         <span class="filter-panel__state">{{ filterSummary }}</span>
       </summary>
 
-      <form class="filters" @submit.prevent="refresh()">
-      <label class="filter-field">
-        <span>Level</span>
-        <input v-model="level" type="text" placeholder="e.g. 14+, 14.5 or 13.5-13.8">
-      </label>
+      <form class="filters" @submit.prevent="applyFilters()">
+        <label class="filter-field">
+          <span>Level</span>
+          <input v-model="level" type="text" placeholder="e.g. 14+, 14.5 or 13.5-13.8">
+        </label>
 
-      <label class="filter-field">
-        <span>Difficulty</span>
-        <select v-model="difficulty">
-          <option value="">All Difficulties</option>
-          <option value="BAS">BASIC</option>
-          <option value="ADV">ADVANCED</option>
-          <option value="EXP">EXPERT</option>
-          <option value="MAS">MASTER</option>
-          <option value="ULT">ULTIMA</option>
-        </select>
-      </label>
+        <label class="filter-field">
+          <span>Difficulty</span>
+          <select v-model="difficulty">
+            <option value="">All Difficulties</option>
+            <option value="BAS">BASIC</option>
+            <option value="ADV">ADVANCED</option>
+            <option value="EXP">EXPERT</option>
+            <option value="MAS">MASTER</option>
+            <option value="ULT">ULTIMA</option>
+          </select>
+        </label>
 
-      <label class="filter-field">
-        <span>Sort By</span>
-        <select v-model="sort">
-          <option v-for="option in SORTS" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
+        <label class="filter-field">
+          <span>Sort By</span>
+          <select v-model="sort">
+            <option v-for="option in SORTS" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </label>
 
-      <label class="filter-field">
-        <span>Order</span>
-        <select v-model="order">
-          <option value="desc">Descending (Highest first)</option>
-          <option value="asc">Ascending (Lowest first)</option>
-        </select>
-      </label>
+        <label class="filter-field">
+          <span>Order</span>
+          <select v-model="order">
+            <option value="desc">Descending (Highest first)</option>
+            <option value="asc">Ascending (Lowest first)</option>
+          </select>
+        </label>
+
+        <label class="filter-field">
+          <span>Per Page</span>
+          <select v-model="pageSize" @change="goToPage(1)">
+            <option :value="24">24 per page</option>
+            <option :value="36">36 per page</option>
+            <option :value="48">48 per page</option>
+            <option :value="60">60 per page</option>
+            <option :value="120">120 per page</option>
+          </select>
+        </label>
 
         <button type="submit" class="btn btn--primary" :disabled="status === 'pending'">
           {{ status === 'pending' ? 'Filtering…' : 'Apply' }}
@@ -114,63 +169,72 @@ const filterSummary = computed(() => {
 
     <ApiError v-if="error" :error="error" />
 
-    <AppSpinner v-else-if="status === 'pending' && !scores" label="Reading your cache…" />
+    <AppSpinner v-else-if="status === 'pending' && !rawScores" label="Reading your cache…" />
 
-    <div v-else-if="!scores?.length" class="empty-card card">
+    <div v-else-if="!allScores.length" class="empty-card card">
       <p class="empty">
         No scores found matching these filters. Run a sync from the
         <NuxtLink to="/statistics">Statistics page</NuxtLink> to fetch your personal bests!
       </p>
     </div>
 
-    <ul v-else class="list">
-      <li v-for="(score, index) in scores" :key="`${score.song.id}-${score.chart.difficultyName}`">
-        <NuxtLink
-          :to="`/records/${score.song.id}/${score.chart.difficulty}`"
-          class="list__link"
-        >
-          <ScoreCard :score="score" :index="index + 1" />
-        </NuxtLink>
-      </li>
-    </ul>
+    <template v-else>
+      <!-- TOP PAGINATION BAR ONLY -->
+      <div class="pagination-bar card">
+        <div class="pagination-info">
+          Showing {{ startItem }}–{{ endItem }} of {{ totalCount }} scores (Page {{ page }} of {{ totalPages }})
+        </div>
+
+        <div class="pagination-controls">
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="page <= 1"
+            @click="goToPage(page - 1)"
+          >
+            ‹
+          </button>
+
+          <template v-for="(p, idx) in visiblePages" :key="idx">
+            <span v-if="p === '...'" class="page-ellipsis">…</span>
+            <button
+              v-else
+              type="button"
+              class="page-btn"
+              :class="{ active: p === page }"
+              @click="goToPage(Number(p))"
+            >
+              {{ p }}
+            </button>
+          </template>
+
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="page >= totalPages"
+            @click="goToPage(page + 1)"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+
+      <!-- SCORE CARDS GRID -->
+      <ul class="list">
+        <li v-for="(score, index) in paginatedScores" :key="`${score.song.id}-${score.chart.difficultyName}`">
+          <NuxtLink
+            :to="`/records/${score.song.id}/${score.chart.difficulty}`"
+            class="list__link"
+          >
+            <ScoreCard :score="score" :index="(page - 1) * pageSize + index + 1" />
+          </NuxtLink>
+        </li>
+      </ul>
+    </template>
   </section>
 </template>
 
 <style scoped>
-.filter-panel {
-  padding: 0;
-}
-
-.filter-panel__summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 0.875rem;
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 650;
-  list-style: none;
-}
-
-.filter-panel__summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Says what is currently applied, so the panel can stay shut. */
-.filter-panel__state {
-  margin-left: auto;
-  font-weight: 500;
-  color: var(--color-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.filter-panel[open] .filters {
-  border-top: 1px solid var(--color-border);
-  padding: 0.875rem;
-}
-
 .top-page {
   display: flex;
   flex-direction: column;
@@ -203,23 +267,37 @@ const filterSummary = computed(() => {
   padding: 1.125rem;
 }
 
-/* The card is the link, so hover is the only affordance needed and it costs
-   no height in a list this long. */
-.list__link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-  border-radius: 6px;
+.filter-panel {
+  padding: 0;
 }
 
-.list__link:hover {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 1px;
+.filter-panel__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.875rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  list-style: none;
 }
 
-.list__link:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+.filter-panel__summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-panel__state {
+  margin-left: auto;
+  font-weight: 500;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-panel[open] .filters {
+  border-top: 1px solid var(--color-border);
+  padding: 0.875rem;
 }
 
 .filters {
@@ -262,6 +340,84 @@ const filterSummary = computed(() => {
   gap: 0.75rem;
 }
 
+.list__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.list__link:hover {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.list__link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Pagination Bar Styles (Matching Song DB) */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+}
+
+.pagination-bar--bottom {
+  margin-top: 0;
+}
+
+.pagination-info {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.page-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.page-ellipsis {
+  color: var(--color-muted);
+  padding: 0 0.2rem;
+}
+
 .empty-card {
   text-align: center;
   padding: 2.5rem 1rem;
@@ -300,4 +456,3 @@ const filterSummary = computed(() => {
   background: var(--color-accent-hover);
 }
 </style>
-

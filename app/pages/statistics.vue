@@ -29,6 +29,9 @@ const { data: stats, error, status, refresh } = await useApiFetch<Statistics>(
   },
 )
 
+const toast = useToast()
+const { confirm } = useConfirm()
+
 const syncing = ref(false)
 const syncError = ref<string | null>(null)
 const skipped = ref<string[]>([])
@@ -38,6 +41,15 @@ const skipped = ref<string[]>([])
  * something the page does on load.
  */
 const runSync = async () => {
+  const confirmed = await confirm({
+    title: 'Xác nhận Đồng bộ (Sync)',
+    message: 'Hệ thống sẽ kết nối với CHUNITHM-NET để cập nhật toàn bộ bảng điểm & số lần chơi. Bạn có muốn tiếp tục?',
+    confirmText: 'Đồng bộ ngay',
+    cancelText: 'Hủy',
+  })
+
+  if (!confirmed) return
+
   syncing.value = true
   syncError.value = null
   skipped.value = []
@@ -49,9 +61,12 @@ const runSync = async () => {
     // beats letting them vanish without a word.
     skipped.value = result.skipped
     await refresh()
+    toast.success('Sync thành công!', `Đã đồng bộ ${result.stored} điểm số từ CHUNITHM-NET.`)
   }
   catch (caught) {
-    syncError.value = readApiError(caught)
+    const errText = readApiError(caught)
+    syncError.value = errText
+    toast.error('Sync thất bại', errText || 'Không thể kết nối với CHUNITHM-NET.')
   }
   finally {
     syncing.value = false

@@ -27,6 +27,7 @@ export type LampKind =
 
 export interface LampBadge {
   label: string
+  shortLabel?: string
   kind: LampKind
 }
 
@@ -41,11 +42,11 @@ const HARD_CLEARS = new Set<ClearLamp>([
 const comboBadge = (lamp: ComboLamp | null): LampBadge | null => {
   switch (lamp) {
     case ComboLamp.ALL_JUSTICE_CRITICAL:
-      return { label: 'AJC', kind: 'ajc' }
+      return { label: 'AJC', shortLabel: 'AJC', kind: 'ajc' }
     case ComboLamp.ALL_JUSTICE:
-      return { label: 'ALL JUSTICE', kind: 'allJustice' }
+      return { label: 'ALL JUSTICE', shortLabel: 'AJ', kind: 'allJustice' }
     case ComboLamp.FULL_COMBO:
-      return { label: 'FULL COMBO', kind: 'fullCombo' }
+      return { label: 'FULL COMBO', shortLabel: 'FC', kind: 'fullCombo' }
     default:
       return null
   }
@@ -54,7 +55,13 @@ const comboBadge = (lamp: ComboLamp | null): LampBadge | null => {
 const chainBadge = (lamp: ChainLamp | null): LampBadge | null => {
   const label = chainLampLabel(lamp)
 
-  return label === null ? null : { label, kind: 'fullChain' }
+  return label === null
+    ? null
+    : {
+        label,
+        shortLabel: label === 'FULL CHAIN+' ? 'FC++' : 'FC+',
+        kind: 'fullChain',
+      }
 }
 
 const clearBadge = (lamp: ClearLamp | null): LampBadge | null => {

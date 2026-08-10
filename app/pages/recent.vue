@@ -26,12 +26,24 @@ const detailLink = (index: number, score: RecentScore) =>
  * personal best loses its breakdown once fifty more credits push it out.
  * Capturing now is the only way it survives.
  */
+const toast = useToast()
+const { confirm } = useConfirm()
+
 const api = useApi()
 const capturing = ref(false)
 const captured = ref<CaptureResult | null>(null)
 const captureError = ref<string | null>(null)
 
 const capture = async () => {
+  const confirmed = await confirm({
+    title: 'Xác nhận Capture Recent Score',
+    message: 'Hệ thống sẽ lưu lại thông số đánh giá (Justice/Attack/Miss) của 50 lượt chơi gần nhất. Tiếp tục?',
+    confirmText: 'Capture ngay',
+    cancelText: 'Hủy',
+  })
+
+  if (!confirmed) return
+
   capturing.value = true
   captureError.value = null
 
@@ -39,9 +51,12 @@ const capture = async () => {
     captured.value = await api<CaptureResult>('/chunithm/records/capture', {
       method: 'POST',
     })
+    toast.success('Capture thành công!', 'Đã ghi nhận chi tiết các lượt chơi gần đây.')
   }
   catch (error) {
-    captureError.value = readApiError(error)
+    const errText = readApiError(error)
+    captureError.value = errText
+    toast.error('Capture thất bại', errText || 'Không thể lưu chi tiết lượt chơi.')
   }
   finally {
     capturing.value = false

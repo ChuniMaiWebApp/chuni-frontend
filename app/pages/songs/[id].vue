@@ -1,11 +1,53 @@
 <script setup lang="ts">
-import type { SongDetail } from '~~/shared/types/api'
+import type { SongDetail, StoredScore } from '~~/shared/types/api'
 
 const route = useRoute()
+const { isSignedIn } = useAuth()
+const api = useApi()
 
 const { data: song, error } = await useApiFetch<SongDetail>(
   () => `/songs/${route.params.id}`,
 )
+
+const userScores = ref<StoredScore[]>([])
+const userScoresLoading = ref(false)
+
+const loadUserScores = async () => {
+  if (!isSignedIn.value || !song.value) return
+  userScoresLoading.value = true
+  try {
+    const res = await api<StoredScore[]>(`/records/songs/${song.value.id}`)
+    userScores.value = res ?? []
+  }
+  catch {
+    userScores.value = []
+  }
+  finally {
+    userScoresLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadUserScores()
+})
+
+const lampLabel = (record: StoredScore): string => {
+  if (record.comboLamp === 3) return 'AJC'
+  if (record.comboLamp === 2) return 'ALL JUSTICE'
+  if (record.comboLamp === 1) return 'FULL COMBO'
+  if (record.clearLamp === 4) return 'CATS'
+  if (record.clearLamp === 3) return 'ABSOLUTE+'
+  if (record.clearLamp === 2) return 'ABSOLUTE'
+  if (record.clearLamp === 1) return 'HARD'
+  return 'CLEAR'
+}
+
+const overpowerFormatted = (record: StoredScore): string | null => {
+  if (record.overpower === null) return null
+  if (!record.maxOverpower) return record.overpower.toFixed(3)
+  const pct = ((record.overpower / record.maxOverpower) * 100).toFixed(2)
+  return `${record.overpower.toFixed(3)} (${pct}%)`
+}
 
 useHead(() => ({ title: song.value ? `${song.value.title} · ChunithmQueue` : 'Song Detail' }))
 
@@ -208,12 +250,92 @@ const availability = computed(() => {
             ><AppIcon name="trophy" /> Leaderboard</NuxtLink>
             <NuxtLink
               v-if="totalNotes(chart)"
-              :to="`/tools?notecount=${totalNotes(chart)}`"
+              :to="`/tools?notecount=${totalNotes(chart)}&const=${chart.const ?? chart.level}&score=1009000`"
               class="chart-link"
             ><AppIcon name="chart" /> Borders</NuxtLink>
           </div>
         </li>
       </ul>
+
+      <!-- User Play Records Section -->
+      <section v-if="isSignedIn" class="user-scores-container">
+        <h2 class="user-scores-title">Your Play Records</h2>
+
+        <!-- Loading State -->
+        <div v-if="userScoresLoading" class="card empty-scores-card">
+          <p class="empty-scores-sub">Loading score history…</p>
+        </div>
+
+        <!-- Empty State: No plays on ANY difficulty -->
+        <div v-else-if="userScores.length === 0" class="card empty-scores-card">
+          <div class="empty-scores-content">
+            <AppIcon name="history" :size="22" class="empty-scores-icon" />
+            <div>
+              <h3 class="empty-scores-heading">Chưa có score cho bài hát này</h3>
+              <p class="empty-scores-sub">Bạn chưa chơi hoặc chưa đồng bộ điểm số bài hát này từ CHUNITHM-NET.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Played State: List of score cards for each played difficulty -->
+        <div v-else class="user-scores-list">
+          <article
+            v-for="record in userScores"
+            :key="record.chart.difficulty"
+            class="card user-score-card"
+            :style="{ '--diff-color': difficultyInk(record.chart.difficulty) }"
+          >
+            <div class="user-score-card__border-strip" />
+
+            <div class="user-score-card__content">
+              <!-- Top Row: Title + Chart Badge & Jacket -->
+              <div class="user-score-card__header">
+                <h3 class="user-score-card__title">
+                  {{ record.song.title }}
+                  <span class="user-score-card__chart-badge" :style="{ color: difficultyInk(record.chart.difficulty) }">
+                    [{{ record.chart.difficultyName }} {{ record.chart.const ?? record.chart.level }}]
+                  </span>
+                </h3>
+                <img
+                  v-if="record.song.jacketUrl"
+                  :src="record.song.jacketUrl"
+                  :alt="record.song.title"
+                  class="user-score-card__jacket"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                >
+              </div>
+
+              <!-- Middle Row: Rank + Lamp + Score -->
+              <div class="user-score-card__main">
+                <span class="score-arrow">▶</span>
+                <RankBadge :rank="record.rank" size="md" />
+                <span class="score-arrow">▶</span>
+                <span class="lamp-tag">{{ lampLabel(record) }}</span>
+                <span class="score-arrow">▶</span>
+                <span class="user-score-card__score tabular">{{ record.score.toLocaleString('en-US') }}</span>
+              </div>
+
+              <!-- Footer Row: Rating · OP · Attempts · Achieved Date -->
+              <div class="user-score-card__footer tabular">
+                <span v-if="record.rating !== null" class="meta-part">
+                  Rating: <strong>{{ record.rating.toFixed(2) }}</strong>
+                </span>
+                <span v-if="overpowerFormatted(record)" class="meta-part">
+                  OP: <strong>{{ overpowerFormatted(record) }}</strong>
+                </span>
+                <span class="meta-part">
+                  <strong>{{ record.playCount ?? 1 }}</strong> {{ (record.playCount ?? 1) === 1 ? 'attempt' : 'attempts' }}
+                </span>
+                <span v-if="record.achievedAt" class="meta-part meta-part--date">
+                  {{ formatDateTime(record.achievedAt) }}
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </template>
   </section>
 </template>
@@ -455,6 +577,170 @@ const availability = computed(() => {
 
 .chart-link:hover {
   text-decoration: underline;
+}
+
+/* User Scores Section (Image 2 style) */
+.user-scores-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.user-scores-title {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.empty-scores-card {
+  padding: 1.25rem 1.5rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.empty-scores-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-scores-icon {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.empty-scores-heading {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  color: var(--color-text);
+  margin: 0 0 0.2rem;
+}
+
+.empty-scores-sub {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.user-scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.user-score-card {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.user-score-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--diff-color);
+}
+
+.user-score-card__border-strip {
+  width: 5px;
+  background: var(--diff-color);
+  flex-shrink: 0;
+}
+
+.user-score-card__content {
+  flex: 1;
+  padding: 0.875rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.user-score-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.user-score-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.user-score-card__chart-badge {
+  font-size: 0.875rem;
+  font-weight: 750;
+  margin-left: 0.25rem;
+}
+
+.user-score-card__jacket {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.user-score-card__main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.score-arrow {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.lamp-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.user-score-card__score {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+}
+
+.user-score-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  padding-top: 0.45rem;
+}
+
+.meta-part strong {
+  color: var(--color-text);
+}
+
+.meta-part--date {
+  margin-left: auto;
+  opacity: 0.8;
 }
 
 @media (max-width: 40rem) {

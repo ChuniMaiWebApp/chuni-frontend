@@ -25,6 +25,9 @@ const year = new Date().getFullYear()
     <footer class="app-footer">
       <span>ChunithmQueue · {{ year }}</span>
     </footer>
+
+    <AppConfirmModal />
+    <AppToastContainer />
   </div>
 </template>
 

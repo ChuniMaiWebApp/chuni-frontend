@@ -335,6 +335,7 @@ export interface StoredScore {
   judgements: Judgements | null
   maxCombo: number | null
   achievedAt: string | null
+  playCount: number | null
   rating: number | null
   overpower: number | null
   maxOverpower: number | null

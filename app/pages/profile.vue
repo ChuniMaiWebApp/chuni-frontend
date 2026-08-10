@@ -27,6 +27,8 @@ const showFriendCode = ref(false)
 const renaming = ref(false)
 const newName = ref('')
 const renameBusy = ref(false)
+const toast = useToast()
+
 const renameError = ref<string | null>(null)
 
 const startRename = () => {
@@ -47,9 +49,12 @@ const submitRename = async () => {
     })
     renaming.value = false
     await refresh()
+    toast.success('Đổi tên thành công!', 'Tên tài khoản CHUNITHM đã được cập nhật.')
   }
   catch (caught) {
-    renameError.value = readApiError(caught)
+    const errText = readApiError(caught)
+    renameError.value = errText
+    toast.error('Đổi tên thất bại', errText || 'Không thể thay đổi tên.')
   }
   finally {
     renameBusy.value = false
@@ -106,6 +111,22 @@ const stats = computed(() => {
     { label: 'Last Played', value: formatDateTime(profile.value.lastPlayed) },
   ]
 })
+
+const translateBonus = (text: string) => {
+  if (!text) return ''
+  let translated = text
+    .replace(/キャラクターEXP/g, 'Char EXP')
+    .replace(/マップマス数/g, 'Map Steps')
+    .replace(/超アバターチャンス/g, 'Super Avatar Chance')
+    .replace(/アバターチャンス/g, 'Avatar Chance')
+    .replace(/マップのメモリー/g, 'Map Memory')
+    .replace(/ペンギンスタンプ/g, 'Penguin Stamp')
+    .replace(/×(\d+(?:\.\d+)?)倍?/g, ' ×$1')
+    .replace(/\+(\d+)/g, ' +$1')
+    .replace(/＋(\d+)/g, ' +$1')
+
+  return translated !== text ? translated : ''
+}
 </script>
 
 <template>
@@ -256,6 +277,7 @@ const stats = computed(() => {
               >
                 <span class="weekday-name">{{ ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day.weekday] }}</span>
                 <small class="weekday-bonus">{{ day.bonus }}</small>
+                <small v-if="translateBonus(day.bonus)" class="weekday-bonus-en">{{ translateBonus(day.bonus) }}</small>
               </li>
             </ul>
 
@@ -582,6 +604,16 @@ const stats = computed(() => {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text);
+  display: block;
+}
+
+.weekday-bonus-en {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  margin-top: 0.15rem;
+  line-height: 1.25;
 }
 
 .extras__streak {

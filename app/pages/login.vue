@@ -25,6 +25,8 @@ const readError = (caught: unknown): string => {
   return (caught as Error).message
 }
 
+const toast = useToast()
+
 const submitPassword = async () => {
   error.value = null
   busy.value = true
@@ -33,10 +35,13 @@ const submitPassword = async () => {
     await signIn(username.value.trim(), password.value)
     // Drop the password from memory as soon as it has served its purpose.
     password.value = ''
+    toast.success('Đăng nhập thành công!', 'Chào mừng bạn đến với CHUNITHM Queue.')
     await navigateTo(redirectTo.value)
   }
   catch (caught) {
-    error.value = readError(caught)
+    const errText = readError(caught)
+    error.value = errText
+    toast.error('Đăng nhập thất bại', errText || 'Vui lòng kiểm tra lại tài khoản & mật khẩu.')
   }
   finally {
     busy.value = false
@@ -49,10 +54,13 @@ const submitClal = async () => {
 
   try {
     await linkWithClal(clal.value.trim())
+    toast.success('Đăng nhập thành công!', 'Đã liên kết Session Cookie clal.')
     await navigateTo(redirectTo.value)
   }
   catch (caught) {
-    error.value = readError(caught)
+    const errText = readError(caught)
+    error.value = errText
+    toast.error('Đăng nhập thất bại', errText || 'Cookie clal không hợp lệ hoặc đã hết hạn.')
   }
   finally {
     busy.value = false

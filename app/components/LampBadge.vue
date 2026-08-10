@@ -22,7 +22,8 @@ defineProps<{ lamp: LampBadge, size?: 'sm' | 'md' }>()
   <span
     class="lamp"
     :class="[`lamp--${lamp.kind}`, `lamp--${size ?? 'md'}`]"
-  >{{ lamp.label }}</span>
+    :title="lamp.label"
+  >{{ size === 'sm' && lamp.shortLabel ? lamp.shortLabel : lamp.label }}</span>
 </template>
 
 <style scoped>
@@ -38,8 +39,9 @@ defineProps<{ lamp: LampBadge, size?: 'sm' | 'md' }>()
 }
 
 .lamp--sm {
-  font-size: 0.5625rem;
-  padding: 0.08rem 0.35rem;
+  font-size: 0.53125rem;
+  padding: 0.06rem 0.28rem;
+  flex-shrink: 0;
 }
 
 .lamp--md {

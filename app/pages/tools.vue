@@ -12,8 +12,8 @@ const api = useApi()
 
 // --- Rating / OVER POWER -----------------------------------------------------
 
-const score = ref(1_007_500)
-const chartConst = ref(14.5)
+const score = ref(Number(route.query.score) || 1_009_000)
+const chartConst = ref(Number(route.query.const) || Number(route.query.chartConst) || 14.5)
 const lamp = ref(0)
 const calc = ref<CalculateResult | null>(null)
 const calcError = ref<string | null>(null)
@@ -64,6 +64,23 @@ const runAnmitsu = async () => {
 
 const verdictLabel = (verdict: 'ideal' | 'risky' | 'no') =>
   verdict === 'ideal' ? 'Works' : verdict === 'risky' ? 'Risky' : 'No'
+
+watch(
+  () => route.query,
+  (query) => {
+    if (query.score) {
+      score.value = Number(query.score) || 1_009_000
+    }
+    if (query.const || query.chartConst) {
+      chartConst.value = Number(query.const) || Number(query.chartConst) || 14.5
+    }
+    if (query.notecount) {
+      notecount.value = Number(query.notecount) || 1000
+    }
+    runCalculate()
+    runBorder()
+  }
+)
 
 await Promise.all([runCalculate(), runBorder(), runAnmitsu()])
 </script>

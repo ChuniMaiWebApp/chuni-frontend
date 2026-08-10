@@ -5,6 +5,10 @@ const { preference, cycle } = useTheme()
 const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' } as const
 const THEME_ICON = { system: 'monitor', light: 'sun', dark: 'moon' } as const
 
+const route = useRoute()
+const MORE_ROUTES = ['/top', '/statistics', '/improve', '/ranking', '/songs', '/tools']
+const isMoreActive = computed(() => MORE_ROUTES.some((r) => route.path.startsWith(r)))
+
 const signOut = async () => {
   await logout()
   await navigateTo('/')
@@ -22,44 +26,62 @@ const closeMore = () => {
 <template>
   <header class="app-header">
     <div class="app-header__inner">
-      <NuxtLink to="/" class="app-header__brand" @click="closeMore">
-        <AppIcon name="music" :size="18" class="app-header__logo-icon" />
-        <span class="app-header__brand-text">Chunithm<span class="app-header__brand-accent">Queue</span></span>
+      <NuxtLink to="/" class="app-header__brand" title="Home" @click="closeMore">
+        <img src="/x-verse-x.png" alt="CHUNITHM VERSE" class="app-header__logo-img">
       </NuxtLink>
 
       <!-- Desktop Nav -->
       <nav class="app-header__nav desktop-only">
         <template v-if="isSignedIn">
           <NuxtLink to="/recent" class="app-header__link">Recent</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
           <NuxtLink to="/best50" class="app-header__link">Best 50</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
           <NuxtLink to="/profile" class="app-header__link">Profile</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
+          <NuxtLink to="/songs" class="app-header__link">Song DB</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
+          <NuxtLink to="/tools" class="app-header__link">Tools</NuxtLink>
+          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+
+          <!-- Expanded on PC / Widescreen (>= 1140px) -->
+          <NuxtLink to="/statistics" class="app-header__link nav-item--xl">Statistics</NuxtLink>
+          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+          <NuxtLink to="/improve" class="app-header__link nav-item--xl">Improvement</NuxtLink>
+          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+          <NuxtLink to="/top" class="app-header__link nav-item--xl">Top PBs</NuxtLink>
+          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+          <NuxtLink to="/ranking" class="app-header__link nav-item--xl">Rankings</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
+
           <span class="app-header__link app-header__link--disabled" title="Queue feature coming soon">
             Queue <span class="badge-soon">Soon</span>
           </span>
 
-          <div class="app-header__dropdown-container">
+          <!-- Dropdown for medium laptop screens (< 1140px) -->
+          <div class="app-header__dropdown-container nav-more--md">
+            <span class="nav-divider" aria-hidden="true" />
             <button
               type="button"
               class="app-header__more-btn"
+              :class="{ 'is-active': isMoreActive }"
               :aria-expanded="showMoreMenu"
               @click="toggleMore"
             >
               More <AppIcon name="chevronDown" :size="13" />
             </button>
             <div v-if="showMoreMenu" class="app-header__dropdown" @click="closeMore">
-              <NuxtLink to="/top" class="app-header__dropdown-item">Top Personal Bests</NuxtLink>
               <NuxtLink to="/statistics" class="app-header__dropdown-item">Statistics</NuxtLink>
               <NuxtLink to="/improve" class="app-header__dropdown-item">Improvement Targets</NuxtLink>
+              <NuxtLink to="/top" class="app-header__dropdown-item">Top Personal Bests</NuxtLink>
               <NuxtLink to="/ranking" class="app-header__dropdown-item">Server Rankings</NuxtLink>
-              <div class="app-header__dropdown-divider" />
-              <NuxtLink to="/songs" class="app-header__dropdown-item">Song Database</NuxtLink>
-              <NuxtLink to="/tools" class="app-header__dropdown-item">Tools & Calculators</NuxtLink>
             </div>
           </div>
         </template>
         <template v-else>
-          <NuxtLink to="/songs" class="app-header__link">Songs</NuxtLink>
-          <NuxtLink to="/tools" class="app-header__link">Tools</NuxtLink>
+          <NuxtLink to="/songs" class="app-header__link">Song Database</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
+          <NuxtLink to="/tools" class="app-header__link">Tools & Calculators</NuxtLink>
         </template>
       </nav>
 
@@ -126,52 +148,86 @@ const closeMore = () => {
 .app-header__inner {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
   width: 100%;
-  max-width: 64rem;
+  max-width: 100rem;
   margin: 0 auto;
-  padding: 0.75rem 1.25rem;
+  padding: 0.35rem 1.25rem;
 }
 
 .app-header__brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-text);
   text-decoration: none;
-  font-size: 1.0625rem;
+  padding: 0;
+  margin-right: 1.25rem;
 }
 
-.app-header__logo-icon {
-  color: var(--color-accent);
+.app-header__logo-img {
+  height: 58px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.65)) drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
 }
 
-.app-header__brand-accent {
-  color: var(--color-accent);
+.app-header__brand:hover .app-header__logo-img {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.9)) drop-shadow(0 0 28px rgba(168, 85, 247, 0.6));
 }
 
 .app-header__nav {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  gap: 0.25rem;
+  font-size: 0.84375rem;
+  font-weight: 550;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-border);
+  opacity: 0.65;
+  flex-shrink: 0;
+  margin: 0 0.1rem;
 }
 
 .app-header__link {
   color: var(--color-muted);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  position: relative;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
-.app-header__link:hover,
+.app-header__link:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
 .app-header__link.router-link-active {
   color: var(--color-text);
+  font-weight: 750;
+  background: var(--color-accent-subtle);
+}
+
+.app-header__link.router-link-active::after,
+.app-header__more-btn.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.35rem;
+  left: 0.4rem;
+  right: 0.4rem;
+  height: 2.5px;
+  background: var(--color-accent);
+  border-radius: 99px;
+  box-shadow: 0 0 8px var(--color-accent);
 }
 
 .app-header__link--disabled {
@@ -201,11 +257,21 @@ const closeMore = () => {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.25rem 0.4rem;
+  padding: 0.4rem 0.2rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.15s ease;
 }
 
-.app-header__more-btn:hover {
+.app-header__more-btn:hover,
+.app-header__more-btn.is-active {
   color: var(--color-text);
+}
+
+.app-header__more-btn.is-active {
+  font-weight: 700;
 }
 
 .app-header__dropdown {
@@ -345,6 +411,29 @@ const closeMore = () => {
 .mobile-nav__icon {
   font-size: 1.125rem;
   line-height: 1.2;
+}
+
+@media (min-width: 1140px) {
+  .nav-item--xl {
+    display: inline-flex !important;
+  }
+  .nav-divider--xl {
+    display: inline-block !important;
+  }
+  .nav-more--md {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1139px) {
+  .nav-item--xl,
+  .nav-divider--xl {
+    display: none !important;
+  }
+  .nav-more--md {
+    display: inline-flex !important;
+    align-items: center;
+  }
 }
 
 @media (max-width: 768px) {
