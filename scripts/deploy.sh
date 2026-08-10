@@ -2,10 +2,10 @@
 # =============================================================================
 # Deploys the Nuxt app on the VPS.
 #
-#   ./scripts/deploy.sh              # normal deploy
-#   ./scripts/deploy.sh --first-run  # `pm2 start` instead of reload
+#   ./scripts/deploy.sh
 #
-# Rolls back to the previous commit if the new build does not serve a page.
+# Rolls back to the previous image if the new build does not serve a rendered
+# page.
 # =============================================================================
 
 set -euo pipefail
@@ -13,33 +13,41 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-FIRST_RUN=false
-[ "${1:-}" = "--first-run" ] && FIRST_RUN=true
-
 APP="http://127.0.0.1:3100/"
+ROLLBACK_TAG="chunimai/web:rollback"
 
 log()  { printf '\n\033[1;36m▸ %s\033[0m\n' "$*"; }
 fail() { printf '\n\033[1;31m✖ %s\033[0m\n' "$*" >&2; }
 
-build_and_reload() {
-  log "Installing dependencies"
-  npm ci
+if ! docker network inspect chunimai >/dev/null 2>&1; then
+  fail "The 'chunimai' network does not exist. Create it once:"
+  fail "  docker network create chunimai"
+  exit 1
+fi
 
-  log "Building"
-  # Nuxt's build is the peak memory moment of a deploy. vps-setup.sh creates
-  # swap for exactly this; without it the build is OOM-killed and the only
-  # symptom is the word "Killed" with no stack trace.
-  npm run build
+log "===== WEB DEPLOY $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
 
-  if [ "$FIRST_RUN" = true ]; then
-    log "Starting PM2 process"
-    pm2 start ecosystem.config.js
-    pm2 save
-  else
-    log "Reloading PM2 process"
-    pm2 startOrReload ecosystem.config.js --update-env
-  fi
-}
+log "Fetching latest code"
+BRANCH="${DEPLOY_BRANCH:-$(git symbolic-ref --short HEAD)}"
+git fetch --prune origin
+git reset --hard "origin/$BRANCH"
+log "Deploying commit: $(git rev-parse --short HEAD) on $BRANCH"
+
+if docker image inspect chunimai/web:latest >/dev/null 2>&1; then
+  docker tag chunimai/web:latest "$ROLLBACK_TAG"
+  HAVE_ROLLBACK=true
+else
+  HAVE_ROLLBACK=false
+fi
+
+log "Building image"
+# Nuxt's build is the peak memory moment of a deploy. vps-setup.sh creates swap
+# for exactly this; without it the build is OOM-killed and the only symptom is
+# the word "Killed" with no stack trace.
+docker compose build
+
+log "Starting container"
+docker compose up -d
 
 health_check() {
   log "Health check"
@@ -69,44 +77,28 @@ health_check() {
   return 1
 }
 
-rollback() {
-  local previous="$1"
-
-  fail "Rolling back to $previous"
-  git reset --hard "$previous"
-  npm ci
-  npm run build
-  pm2 startOrReload ecosystem.config.js --update-env
-
-  if health_check; then
-    fail "Rolled back to $previous. The new commit is broken — do not redeploy it unchanged."
-    exit 1
-  fi
-
-  fail "ROLLBACK ALSO FAILED. The site is down. Check: pm2 logs chuni-frontend --lines 100"
-  exit 2
-}
-
-log "===== WEB DEPLOY $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
-
-PREVIOUS_SHA=$(git rev-parse HEAD)
-log "Current commit: $PREVIOUS_SHA"
-
-log "Fetching latest code"
-# Whatever branch the checkout is on. Hardcoding `main` breaks silently on a
-# repo whose default is still `master`: the fetch succeeds, the reset fails,
-# and `set -e` aborts the deploy with a message about an unknown revision.
-BRANCH="${DEPLOY_BRANCH:-$(git symbolic-ref --short HEAD)}"
-git fetch --prune origin
-git reset --hard "origin/$BRANCH"
-log "Deploying commit: $(git rev-parse HEAD) on $BRANCH"
-
-build_and_reload
-
 if health_check; then
-  log "===== WEB DEPLOY OK — $(git rev-parse HEAD) ====="
-  pm2 save
+  log "===== WEB DEPLOY OK — $(git rev-parse --short HEAD) ====="
+  docker image prune -f >/dev/null 2>&1 || true
   exit 0
 fi
 
-rollback "$PREVIOUS_SHA"
+fail "Deploy failed. Container logs:"
+docker compose logs --tail 40 web || true
+
+if [ "$HAVE_ROLLBACK" = true ]; then
+  fail "Rolling back to the previous image"
+  docker tag "$ROLLBACK_TAG" chunimai/web:latest
+  docker compose up -d --no-build
+
+  if health_check; then
+    fail "Rolled back. The new commit is broken — do not redeploy it unchanged."
+    exit 1
+  fi
+
+  fail "ROLLBACK ALSO FAILED. Check: docker compose logs web"
+  exit 2
+fi
+
+fail "No previous image to roll back to (first deploy)."
+exit 1

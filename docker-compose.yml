@@ -1,0 +1,51 @@
+# =============================================================================
+# ChuniMai web app
+#
+#   docker compose up -d --build     # deploy
+#   docker compose logs -f web
+#   docker compose ps
+#   docker compose restart web
+#   docker compose down
+#
+# Joins the `chunimai` network so server-side rendering can call the API by
+# container name instead of going back out through nginx.
+#   docker network create chunimai
+# =============================================================================
+
+services:
+  web:
+    build:
+      context: .
+      target: runner
+    image: chunimai/web:latest
+    container_name: chuni-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3100
+
+      # What the *browser* is told to call. A public URL, because the browser
+      # is not on this network.
+      NUXT_PUBLIC_API_BASE: https://chunithm-api.novaseele.com/api/v1
+
+      # What *this container* calls while server-rendering. Deliberately not
+      # the public URL: that resolves to Cloudflare, so every rendered page
+      # would leave the VPS, cross the internet and come back in through nginx
+      # to reach a container sitting on the same bridge.
+      NUXT_API_BASE_SERVER: http://chuni-backend:3333/api/v1
+    ports:
+      # nginx on the host is the only thing that should reach this.
+      - '127.0.0.1:3100:3100'
+    networks:
+      chunimai:
+        aliases: [chuni-frontend, web]
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+
+networks:
+  chunimai:
+    external: true
