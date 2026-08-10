@@ -61,7 +61,9 @@ const runSync = async () => {
     // beats letting them vanish without a word.
     skipped.value = result.skipped
     await refresh()
-    toast.success('Sync thành công!', `Đã đồng bộ ${result.stored} điểm số từ CHUNITHM-NET.`)
+    // `scoreCount`, not `stored` — the field has never existed on SyncResult,
+    // so this toast has been reading "Đã đồng bộ undefined điểm số".
+    toast.success('Sync thành công!', `Đã đồng bộ ${result.scoreCount} điểm số từ CHUNITHM-NET.`)
   }
   catch (caught) {
     const errText = readApiError(caught)

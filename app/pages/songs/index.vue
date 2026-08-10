@@ -19,8 +19,22 @@ const minBpm = ref((route.query.minBpm as string) ?? '')
 const maxBpm = ref((route.query.maxBpm as string) ?? '')
 const charter = ref((route.query.charter as string) ?? '')
 const hideRemoved = ref(route.query.hideRemoved !== 'false')
-const sortBy = ref<'default' | 'title' | 'const' | 'release' | 'bpm'>((route.query.sortBy as any) || 'default')
-const sortOrder = ref<'asc' | 'desc'>((route.query.sortOrder as any) || 'desc')
+// The query string is user input: narrow it to the union instead of asserting,
+// so `?sortBy=nonsense` falls back rather than putting an unknown value into a
+// ref the sort function trusts.
+type SortBy = 'default' | 'title' | 'const' | 'release' | 'bpm'
+type SortOrder = 'asc' | 'desc'
+
+const SORT_BY: readonly SortBy[] = ['default', 'title', 'const', 'release', 'bpm']
+const SORT_ORDER: readonly SortOrder[] = ['asc', 'desc']
+
+const pick = <T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T =>
+  typeof raw === 'string' && (allowed as readonly string[]).includes(raw)
+    ? (raw as T)
+    : fallback
+
+const sortBy = ref<SortBy>(pick(route.query.sortBy, SORT_BY, 'default'))
+const sortOrder = ref<SortOrder>(pick(route.query.sortOrder, SORT_ORDER, 'desc'))
 const page = ref(Number(route.query.page as string) || 1)
 const pageSize = ref(Number(route.query.limit as string) || 30)
 
@@ -245,8 +259,8 @@ onBeforeUnmount(() => {
     <div class="search-control-bar card">
       <div class="search-input-wrapper">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input
           v-model="query"
@@ -272,10 +286,10 @@ onBeforeUnmount(() => {
             @click="viewMode = 'grid'; executeSearch(false)"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
             </svg>
           </button>
           <button
@@ -286,12 +300,12 @@ onBeforeUnmount(() => {
             @click="viewMode = 'list'; executeSearch(false)"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
             </svg>
           </button>
         </div>
@@ -304,15 +318,15 @@ onBeforeUnmount(() => {
           @click="isSidebarOpen = !isSidebarOpen"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line>
-            <line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line>
-            <line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line>
-            <line x1="9" y1="8" x2="15" y2="8"></line>
-            <line x1="17" y1="16" x2="23" y2="16"></line>
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/>
+            <line x1="9" y1="8" x2="15" y2="8"/>
+            <line x1="17" y1="16" x2="23" y2="16"/>
           </svg>
           <span>Filters Sidebar</span>
           <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>

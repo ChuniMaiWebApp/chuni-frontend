@@ -31,16 +31,13 @@ onMounted(() => {
   loadUserScores()
 })
 
-const lampLabel = (record: StoredScore): string => {
-  if (record.comboLamp === 3) return 'AJC'
-  if (record.comboLamp === 2) return 'ALL JUSTICE'
-  if (record.comboLamp === 1) return 'FULL COMBO'
-  if (record.clearLamp === 4) return 'CATS'
-  if (record.clearLamp === 3) return 'ABSOLUTE+'
-  if (record.clearLamp === 2) return 'ABSOLUTE'
-  if (record.clearLamp === 1) return 'HARD'
-  return 'CLEAR'
-}
+// Was a hand-rolled ladder of raw numbers, and the numbers did not match the
+// enum: ClearLamp is FAILED 0, CLEAR 1, HARD 4, BRAVE 5, ABSOLUTE 6,
+// CATASTROPHY 7, so `clearLamp === 1` was labelling every ordinary clear
+// "HARD", 2 and 3 could never match anything, and a real HARD clear came out
+// as "CATS". scoreLamps() classifies on the enum and is what every other
+// surface already uses.
+const lampsFor = (record: StoredScore) => scoreLamps(record)
 
 const overpowerFormatted = (record: StoredScore): string | null => {
   if (record.overpower === null) return null
@@ -312,7 +309,12 @@ const availability = computed(() => {
                 <span class="score-arrow">▶</span>
                 <RankBadge :rank="record.rank" size="md" />
                 <span class="score-arrow">▶</span>
-                <span class="lamp-tag">{{ lampLabel(record) }}</span>
+                <LampBadge
+                  v-for="lamp in lampsFor(record)"
+                  :key="lamp.label"
+                  :lamp="lamp"
+                  size="sm"
+                />
                 <span class="score-arrow">▶</span>
                 <span class="user-score-card__score tabular">{{ record.score.toLocaleString('en-US') }}</span>
               </div>
@@ -703,17 +705,6 @@ const availability = computed(() => {
   color: var(--color-muted);
   font-size: 0.7rem;
   opacity: 0.6;
-}
-
-.lamp-tag {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 0.12rem 0.45rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-hover);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
 }
 
 .user-score-card__score {

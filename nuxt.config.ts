@@ -25,10 +25,22 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Server-only secrets go here (override with NUXT_* env vars).
+    /**
+     * Base URL the *Nitro server* uses during SSR. Override with
+     * NUXT_API_BASE_SERVER.
+     *
+     * In production the browser talks to https://chunithm-api.novaseele.com,
+     * but the server must not: that address resolves to Cloudflare, so every
+     * server-rendered page would leave the VPS, cross the internet, and come
+     * back in through nginx to reach a process listening on the same machine.
+     * Slower, and it makes SSR depend on the CDN being reachable from inside
+     * the box. Loopback keeps it a local call.
+     */
+    apiBaseServer: 'http://127.0.0.1:3333/api/v1',
 
     public: {
-      // Override with NUXT_PUBLIC_API_BASE
+      // What the browser calls. Override with NUXT_PUBLIC_API_BASE — in
+      // production that is the absolute chunithm-api URL.
       apiBase: '/api/v1',
     },
   },

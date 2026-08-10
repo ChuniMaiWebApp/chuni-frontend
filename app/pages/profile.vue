@@ -114,7 +114,7 @@ const stats = computed(() => {
 
 const translateBonus = (text: string) => {
   if (!text) return ''
-  let translated = text
+  const translated = text
     .replace(/キャラクターEXP/g, 'Char EXP')
     .replace(/マップマス数/g, 'Map Steps')
     .replace(/超アバターチャンス/g, 'Super Avatar Chance')
