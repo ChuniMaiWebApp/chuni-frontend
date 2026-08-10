@@ -145,8 +145,8 @@ const pages = computed(() =>
 
     <!-- Logged out Hero Banner -->
     <div v-else class="hero-guest">
-      <div class="hero-guest__badge">CHUNITHM Vietnam App</div>
-      <h1 class="hero-guest__title">Chunithm<span class="text-accent">Queue</span></h1>
+      <!-- <div class="hero-guest__badge">ChunithmWebApp</div> -->
+      <h1 class="hero-guest__title">Chunithm<span class="text-accent">Web App</span></h1>
       <p class="hero-guest__lead">
         Track your play history, calculate rating targets, analyze judgement accuracy, and join arcade queues right from your phone.
       </p>
