@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HealthResponse, Statistics } from '~~/shared/types/api'
+import type { Statistics } from '~~/shared/types/api'
 
 useHead({ title: 'ChunithmWebApp — Home' })
 
@@ -7,7 +7,7 @@ const { user, refresh: refreshUser } = useAuth()
 
 await refreshUser()
 
-const { data: health } = await useApiFetch<HealthResponse>('/health')
+// const { data: health } = await useApiFetch<HealthResponse>('/health')
 
 /**
  * The signed-in summary, read entirely from the local cache.
@@ -182,10 +182,10 @@ const pages = computed(() =>
       </NuxtLink>
     </div>
 
-    <!-- System Status Collapsible -->
+    <!-- System Status Collapsible (Hidden)
     <details class="status">
       <summary class="status__summary">
-        <span>System & API Services</span>
+        <span>System &amp; API Services</span>
       </summary>
       <div class="status-grid">
         <StatusCard
@@ -196,6 +196,7 @@ const pages = computed(() =>
         />
       </div>
     </details>
+    -->
   </section>
 </template>
 
