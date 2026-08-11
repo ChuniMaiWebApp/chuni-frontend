@@ -550,7 +550,14 @@ export interface Profile {
   reincarnationStars: number
   rating: number
   overPower: { value: number, percentage: number } | null
-  titles: Array<{ content: string, rarity: string }>
+  titles: Array<{
+    /** Empty for collaboration titles, whose wording exists only in the image. */
+    content: string
+    /** Plate to draw `content` on; `special` when the game supplies artwork. */
+    rarity: string
+    /** Finished artwork, for titles the game draws rather than composes. */
+    imageUrl: string | null
+  }>
   team: { name: string, emblem: string } | null
   possession: string
   medal: number | null

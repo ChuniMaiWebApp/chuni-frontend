@@ -166,11 +166,26 @@ const translateBonus = (text: string) => {
 
           <div class="player-card__info">
             <p v-if="profile.titles.length" class="player-card__titles">
-              <HonorPlate
-                v-for="title in profile.titles"
-                :key="title.content"
-                :rarity="title.rarity"
-              >{{ title.content }}</HonorPlate>
+              <!--
+                Collaboration titles arrive as finished artwork with the wording
+                already in the image, so they are shown as the game draws them.
+                Ordinary ones are a named plate plus text and are redrawn.
+              -->
+              <template v-for="(title, index) in profile.titles">
+                <img
+                  v-if="title.imageUrl"
+                  :key="`art-${index}`"
+                  :src="title.imageUrl"
+                  class="player-card__title-art"
+                  alt="Collaboration title"
+                  loading="lazy"
+                >
+                <HonorPlate
+                  v-else
+                  :key="`plate-${index}`"
+                  :rarity="title.rarity"
+                >{{ title.content }}</HonorPlate>
+              </template>
             </p>
 
             <div class="player-card__name-row">
@@ -360,8 +375,23 @@ const translateBonus = (text: string) => {
 .player-card__titles {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.375rem;
   margin: 0 0 0.5rem;
+}
+
+/*
+ * A collaboration title, drawn by the game rather than composed here.
+ *
+ * Height is matched to HonorPlate so a player wearing one of each does not get
+ * a ragged row; width follows the artwork, which is not a fixed aspect ratio.
+ */
+.player-card__title-art {
+  height: 1.25rem;
+  width: auto;
+  max-width: 100%;
+  border-radius: 2px;
+  object-fit: contain;
 }
 
 .player-card__title-tag {
