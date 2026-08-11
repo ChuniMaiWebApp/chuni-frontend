@@ -2,7 +2,7 @@
 import type { Statistics, SyncResult } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Statistics' })
+useHead({ title: 'ChunithmWebApp · Statistics' })
 
 const api = useApi()
 

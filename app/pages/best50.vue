@@ -2,7 +2,7 @@
 import type { RatingBreakdown } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Best 50' })
+useHead({ title: 'ChunithmWebApp · Best 50' })
 
 const { data, error, pending, refresh } = await useApiFetch<RatingBreakdown>(
   '/chunithm/records/best50',

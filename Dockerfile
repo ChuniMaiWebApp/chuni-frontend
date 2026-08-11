@@ -37,6 +37,6 @@ EXPOSE 3100
 # rendered, so its own title in the HTML proves the render ran rather than
 # erroring into an empty shell.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3100/ | grep -q 'ChunithmQueue' || exit 1
+  CMD wget -qO- http://127.0.0.1:3100/ | grep -q 'ChunithmWebApp' || exit 1
 
 CMD ["node", ".output/server/index.mjs"]

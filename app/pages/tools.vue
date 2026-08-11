@@ -5,7 +5,7 @@ import type {
   CalculateResult,
 } from '~~/shared/types/api'
 
-useHead({ title: 'ChunithmQueue · Arcade Utilities & Calculators' })
+useHead({ title: 'ChunithmWebApp · Arcade Utilities & Calculators' })
 
 const route = useRoute()
 const api = useApi()

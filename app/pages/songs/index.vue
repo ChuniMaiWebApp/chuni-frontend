@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SongSearchResponse, ChartView } from '~~/shared/types/api'
 
-useHead({ title: 'ChunithmQueue · Songs Database' })
+useHead({ title: 'ChunithmWebApp · Songs Database' })
 
 const route = useRoute()
 const router = useRouter()

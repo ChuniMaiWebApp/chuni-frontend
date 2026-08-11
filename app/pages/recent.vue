@@ -2,7 +2,7 @@
 import type { CaptureResult, RecentScore } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Recent Plays' })
+useHead({ title: 'ChunithmWebApp · Recent Plays' })
 
 const { data: scores, error, pending, refresh } = await useApiFetch<RecentScore[]>(
   '/chunithm/records/recent',

@@ -28,8 +28,8 @@ const best = computed(
 
 useHead(() => ({
   title: record.value
-    ? `${record.value.song.title} · ChunithmQueue`
-    : 'Record · ChunithmQueue',
+    ? `${record.value.song.title} · ChunithmWebApp`
+    : 'Record · ChunithmWebApp',
 }))
 
 /**

@@ -23,7 +23,7 @@ const year = new Date().getFullYear()
     </main>
 
     <footer class="app-footer">
-      <span>ChunithmQueue · {{ year }}</span>
+      <span>ChunithmWebApp · {{ year }}</span>
     </footer>
 
     <AppConfirmModal />

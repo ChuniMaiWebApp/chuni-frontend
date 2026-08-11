@@ -1,6 +1,6 @@
 export type ThemePreference = 'system' | 'light' | 'dark'
 
-const STORAGE_KEY = 'chunithmqueue:theme'
+const STORAGE_KEY = 'ChunithmWebApp:theme'
 
 /**
  * Light/dark preference, applied as `data-theme` on the document element.

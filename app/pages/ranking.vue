@@ -2,7 +2,7 @@
 import type { Ranking } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Global Rankings' })
+useHead({ title: 'ChunithmWebApp · Global Rankings' })
 
 const { user } = useAuth()
 

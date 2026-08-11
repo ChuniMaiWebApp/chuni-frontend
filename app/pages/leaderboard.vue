@@ -2,7 +2,7 @@
 import type { Leaderboard, SongDetail, SongSearchResult } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Chart Leaderboard' })
+useHead({ title: 'ChunithmWebApp · Chart Leaderboard' })
 
 const route = useRoute()
 const router = useRouter()

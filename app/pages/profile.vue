@@ -6,7 +6,7 @@ import type {
 } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · Profile' })
+useHead({ title: 'ChunithmWebApp · Profile' })
 
 const api = useApi()
 

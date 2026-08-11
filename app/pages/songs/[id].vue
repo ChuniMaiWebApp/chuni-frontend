@@ -46,7 +46,7 @@ const overpowerFormatted = (record: StoredScore): string | null => {
   return `${record.overpower.toFixed(3)} (${pct}%)`
 }
 
-useHead(() => ({ title: song.value ? `${song.value.title} · ChunithmQueue` : 'Song Detail' }))
+useHead(() => ({ title: song.value ? `${song.value.title} · ChunithmWebApp` : 'Song Detail' }))
 
 const bpmLabel = computed(() => {
   const bpm = song.value?.bpm

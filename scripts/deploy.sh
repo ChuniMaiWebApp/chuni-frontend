@@ -61,7 +61,7 @@ health_check() {
       # 200 alone only proves Nitro is answering. The home page is server
       # rendered, so its own name in the HTML proves the render ran rather than
       # erroring into an empty shell.
-      if curl -fsS --max-time 10 "$APP" | grep -q "ChunithmQueue"; then
+      if curl -fsS --max-time 10 "$APP" | grep -q "ChunithmWebApp"; then
         echo "  web: 200, SSR content present"
         return 0
       fi

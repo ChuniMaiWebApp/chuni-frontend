@@ -2,7 +2,7 @@
 import type { StoredScore } from '~~/shared/types/api'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'ChunithmQueue · All Personal Bests' })
+useHead({ title: 'ChunithmWebApp · All Personal Bests' })
 
 const route = useRoute()
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useHead({ title: 'ChunithmQueue · Sign in' })
+useHead({ title: 'ChunithmWebApp · Sign in' })
 
 const route = useRoute()
 const { signIn, linkWithClal } = useAuth()

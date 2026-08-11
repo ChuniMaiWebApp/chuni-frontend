@@ -40,8 +40,8 @@ const chart = computed(
 
 useHead(() => ({
   title: play.value
-    ? `${play.value.song.title} · ChunithmQueue`
-    : 'Play Detail · ChunithmQueue',
+    ? `${play.value.song.title} · ChunithmWebApp`
+    : 'Play Detail · ChunithmWebApp',
 }))
 
 /**

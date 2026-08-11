@@ -48,7 +48,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'ChunithmQueue',
+      title: 'ChunithmWebApp',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -62,7 +62,7 @@ export default defineNuxtConfig({
           // it lives in localStorage — so this is the only place it can
           // happen without a visible swap.
           innerHTML:
-            "try{var t=localStorage.getItem('chunithmqueue:theme');"
+            "try{var t=localStorage.getItem('ChunithmWebApp:theme');"
             + "if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}",
           tagPriority: 'critical',
         },

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HealthResponse, Statistics } from '~~/shared/types/api'
 
-useHead({ title: 'ChunithmQueue — Home' })
+useHead({ title: 'ChunithmWebApp — Home' })
 
 const { user, refresh: refreshUser } = useAuth()
 
