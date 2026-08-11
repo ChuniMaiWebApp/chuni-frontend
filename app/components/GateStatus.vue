@@ -31,12 +31,20 @@ const STATE = {
   unknown: { label: 'Unrecognised', mark: '?' },
 } as const
 
-// If a badge image is present, the gate has been unlocked/cleared
+// Checks if the badge URL is a placeholder/disabled frame (e.g. icon_gate_off.png)
+const isOffBadge = (url: string | null) => {
+  if (!url) return true
+  const filename = url.split('/').pop()?.toLowerCase() ?? ''
+  return filename.includes('_off') || filename.includes('gate_off') || filename.includes('off.png')
+}
+
+// Effective status for rendering UI label & borders
 const effectiveStatus = computed(() => {
-  if (props.gate.badgeUrl && (props.gate.status === 'unknown' || !props.gate.status)) {
+  if (props.gate.status === 'clear') return 'clear'
+  if (props.gate.badgeUrl && !isOffBadge(props.gate.badgeUrl)) {
     return 'clear'
   }
-  return props.gate.status ?? 'not_found'
+  return 'not_found'
 })
 </script>
 
