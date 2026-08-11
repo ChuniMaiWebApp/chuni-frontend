@@ -6,7 +6,7 @@ const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' } as const
 const THEME_ICON = { system: 'monitor', light: 'sun', dark: 'moon' } as const
 
 const route = useRoute()
-const MORE_ROUTES = ['/top', '/statistics', '/improve', '/ranking', '/songs', '/tools', '/support']
+const MORE_ROUTES = ['/top', '/statistics', '/improve', '/ranking', '/songs', '/tools']
 const isMoreActive = computed(() => MORE_ROUTES.some((r) => route.path.startsWith(r)))
 
 const signOut = async () => {
@@ -95,9 +95,9 @@ onBeforeUnmount(() => {
           <NuxtLink to="/top" class="app-header__link nav-item--xl">Top PBs</NuxtLink>
           <span class="nav-divider nav-divider--xl" aria-hidden="true" />
           <NuxtLink to="/ranking" class="app-header__link nav-item--xl">Rankings</NuxtLink>
-          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
-          <NuxtLink to="/support" class="app-header__link nav-item--xl">Support</NuxtLink>
           <span class="nav-divider" aria-hidden="true" />
+          <!-- <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+          <NuxtLink to="/support" class="app-header__link nav-item--xl">Support</NuxtLink> -->
 
           <span class="app-header__link app-header__link--disabled" title="Queue feature coming soon">
             Queue <span class="badge-soon">Soon</span>
@@ -120,7 +120,7 @@ onBeforeUnmount(() => {
               <NuxtLink to="/improve" class="app-header__dropdown-item">Improvement Targets</NuxtLink>
               <NuxtLink to="/top" class="app-header__dropdown-item">Top Personal Bests</NuxtLink>
               <NuxtLink to="/ranking" class="app-header__dropdown-item">Server Rankings</NuxtLink>
-              <NuxtLink to="/support" class="app-header__dropdown-item">Support Project</NuxtLink>
+              <!-- <NuxtLink to="/support" class="app-header__dropdown-item">Support Project</NuxtLink> -->
             </div>
           </div>
         </template>
@@ -128,8 +128,8 @@ onBeforeUnmount(() => {
           <NuxtLink to="/songs" class="app-header__link">Song Database</NuxtLink>
           <span class="nav-divider" aria-hidden="true" />
           <NuxtLink to="/tools" class="app-header__link">Tools &amp; Calculators</NuxtLink>
-          <span class="nav-divider" aria-hidden="true" />
-          <NuxtLink to="/support" class="app-header__link">Support</NuxtLink>
+          <!-- <span class="nav-divider" aria-hidden="true" />
+          <NuxtLink to="/support" class="app-header__link">Support</NuxtLink> -->
         </template>
       </nav>
 
@@ -183,6 +183,15 @@ onBeforeUnmount(() => {
         <span class="mobile-nav__label">Best 50</span>
       </NuxtLink>
 
+      <NuxtLink v-if="isSignedIn" to="/profile" class="mobile-nav__item" @click="closeMobileMore">
+        <AppIcon name="user" :size="20" />
+        <span class="mobile-nav__label">Profile</span>
+      </NuxtLink>
+      <NuxtLink v-else to="/login" class="mobile-nav__item" @click="closeMobileMore">
+        <AppIcon name="key" :size="20" />
+        <span class="mobile-nav__label">Sign In</span>
+      </NuxtLink>
+
       <!--
         Replaces the old always-disabled "Queue" slot. A bar with only five
         physical slots has no room to give one away permanently to a feature
@@ -198,18 +207,9 @@ onBeforeUnmount(() => {
         aria-haspopup="dialog"
         @click="toggleMobileMore"
       >
-        <AppIcon name="grid" :size="20" />
+        <AppIcon name="grid" :size="18" />
         <span class="mobile-nav__label">More</span>
       </button>
-
-      <NuxtLink v-if="isSignedIn" to="/profile" class="mobile-nav__item" @click="closeMobileMore">
-        <AppIcon name="user" :size="20" />
-        <span class="mobile-nav__label">Profile</span>
-      </NuxtLink>
-      <NuxtLink v-else to="/login" class="mobile-nav__item" @click="closeMobileMore">
-        <AppIcon name="key" :size="20" />
-        <span class="mobile-nav__label">Sign In</span>
-      </NuxtLink>
     </nav>
   </Teleport>
 
@@ -232,10 +232,10 @@ onBeforeUnmount(() => {
               <AppIcon name="sliders" :size="20" />
               <span>Tools &amp; Calculators</span>
             </NuxtLink>
-            <NuxtLink to="/support" class="mobile-more-item">
+            <!-- <NuxtLink to="/support" class="mobile-more-item">
               <AppIcon name="heart" :size="20" />
               <span>Support Project</span>
-            </NuxtLink>
+            </NuxtLink> -->
 
             <template v-if="isSignedIn">
               <NuxtLink to="/statistics" class="mobile-more-item">
@@ -561,7 +561,10 @@ onBeforeUnmount(() => {
   appearance: none;
   background: none;
   border: none;
+  padding: 0;
+  margin: 0;
   font: inherit;
+  line-height: inherit;
   cursor: pointer;
 }
 
