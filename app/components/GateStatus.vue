@@ -21,7 +21,7 @@ import type { LinkedGateProgress } from '~~/shared/types/api'
  * the bug this feature was built to fix: the app reported gates as unbroken
  * that the player had already cleared.
  */
-defineProps<{ gate: LinkedGateProgress }>()
+const props = defineProps<{ gate: LinkedGateProgress }>()
 
 const STATE = {
   clear: { label: 'Cleared', mark: '✓' },
@@ -30,10 +30,18 @@ const STATE = {
   not_found: { label: 'Not found', mark: '·' },
   unknown: { label: 'Unrecognised', mark: '?' },
 } as const
+
+// If a badge image is present, the gate has been unlocked/cleared
+const effectiveStatus = computed(() => {
+  if (props.gate.badgeUrl && (props.gate.status === 'unknown' || !props.gate.status)) {
+    return 'clear'
+  }
+  return props.gate.status ?? 'not_found'
+})
 </script>
 
 <template>
-  <div class="gate" :data-status="gate.status">
+  <div class="gate" :data-status="effectiveStatus">
     <img
       v-if="gate.badgeUrl"
       :src="gate.badgeUrl"
@@ -43,11 +51,11 @@ const STATE = {
       height="36"
       loading="lazy"
     >
-    <span v-else class="gate__mark" aria-hidden="true">{{ STATE[gate.status].mark }}</span>
+    <span v-else class="gate__mark" aria-hidden="true">{{ STATE[effectiveStatus].mark }}</span>
 
     <span class="gate__body">
       <span class="gate__name">{{ gate.gate }}</span>
-      <span class="gate__state">{{ STATE[gate.status].label }}</span>
+      <span class="gate__state">{{ STATE[effectiveStatus].label }}</span>
     </span>
   </div>
 </template>
