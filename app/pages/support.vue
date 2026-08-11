@@ -102,7 +102,7 @@ const repos = [
           <div class="qr-card__badge">Bank Transfer (Vietnam)</div>
           <h3 class="qr-card__title">Vietcombank (VCB)</h3>
           <div class="qr-card__img-container">
-            <img src="/vcb-qr.jpg" alt="Vietcombank QR Code" class="qr-card__img" />
+            <img src="/vcb-qr.jpg" alt="Vietcombank QR Code" class="qr-card__img">
           </div>
           <p class="qr-card__note">Scan with any banking app in Vietnam</p>
         </div>
@@ -111,7 +111,7 @@ const repos = [
           <div class="qr-card__badge qr-card__badge--paypal">International</div>
           <h3 class="qr-card__title">PayPal</h3>
           <div class="qr-card__img-container">
-            <img src="/paypal-qr.jpg" alt="PayPal QR Code" class="qr-card__img" />
+            <img src="/paypal-qr.jpg" alt="PayPal QR Code" class="qr-card__img">
           </div>
           <p class="qr-card__note">Scan with PayPal app for international support</p>
         </div>
