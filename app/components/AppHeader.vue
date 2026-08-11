@@ -27,7 +27,7 @@ const closeMore = () => {
   <header class="app-header">
     <div class="app-header__inner">
       <NuxtLink to="/" class="app-header__brand" title="Home" @click="closeMore">
-        <img src="/x-verse-x.png" alt="CHUNITHM VERSE" class="app-header__logo-img">
+        <img src="/x-verse-x-with-penguin.png" alt="CHUNITHM VERSE" class="app-header__logo-img">
       </NuxtLink>
 
       <!-- Desktop Nav -->

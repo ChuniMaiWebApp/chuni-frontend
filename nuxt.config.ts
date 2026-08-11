@@ -54,7 +54,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Chunithm queue web app' },
       ],
-      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+      link: [{ rel: 'icon', type: 'image/png', href: '/x-verse-x-with-penguin.png' }],
       script: [
         {
           // Runs before first paint so an explicitly chosen theme does not
