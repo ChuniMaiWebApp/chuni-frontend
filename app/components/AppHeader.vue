@@ -6,7 +6,7 @@ const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' } as const
 const THEME_ICON = { system: 'monitor', light: 'sun', dark: 'moon' } as const
 
 const route = useRoute()
-const MORE_ROUTES = ['/top', '/statistics', '/improve', '/ranking', '/songs', '/tools']
+const MORE_ROUTES = ['/top', '/statistics', '/improve', '/ranking', '/songs', '/tools', '/support']
 const isMoreActive = computed(() => MORE_ROUTES.some((r) => route.path.startsWith(r)))
 
 const signOut = async () => {
@@ -95,6 +95,8 @@ onBeforeUnmount(() => {
           <NuxtLink to="/top" class="app-header__link nav-item--xl">Top PBs</NuxtLink>
           <span class="nav-divider nav-divider--xl" aria-hidden="true" />
           <NuxtLink to="/ranking" class="app-header__link nav-item--xl">Rankings</NuxtLink>
+          <span class="nav-divider nav-divider--xl" aria-hidden="true" />
+          <NuxtLink to="/support" class="app-header__link nav-item--xl">Support</NuxtLink>
           <span class="nav-divider" aria-hidden="true" />
 
           <span class="app-header__link app-header__link--disabled" title="Queue feature coming soon">
@@ -118,13 +120,16 @@ onBeforeUnmount(() => {
               <NuxtLink to="/improve" class="app-header__dropdown-item">Improvement Targets</NuxtLink>
               <NuxtLink to="/top" class="app-header__dropdown-item">Top Personal Bests</NuxtLink>
               <NuxtLink to="/ranking" class="app-header__dropdown-item">Server Rankings</NuxtLink>
+              <NuxtLink to="/support" class="app-header__dropdown-item">Support Project</NuxtLink>
             </div>
           </div>
         </template>
         <template v-else>
           <NuxtLink to="/songs" class="app-header__link">Song Database</NuxtLink>
           <span class="nav-divider" aria-hidden="true" />
-          <NuxtLink to="/tools" class="app-header__link">Tools & Calculators</NuxtLink>
+          <NuxtLink to="/tools" class="app-header__link">Tools &amp; Calculators</NuxtLink>
+          <span class="nav-divider" aria-hidden="true" />
+          <NuxtLink to="/support" class="app-header__link">Support</NuxtLink>
         </template>
       </nav>
 
@@ -226,6 +231,10 @@ onBeforeUnmount(() => {
             <NuxtLink to="/tools" class="mobile-more-item">
               <AppIcon name="sliders" :size="20" />
               <span>Tools &amp; Calculators</span>
+            </NuxtLink>
+            <NuxtLink to="/support" class="mobile-more-item">
+              <AppIcon name="heart" :size="20" />
+              <span>Support Project</span>
             </NuxtLink>
 
             <template v-if="isSignedIn">
