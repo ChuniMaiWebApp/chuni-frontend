@@ -15,8 +15,8 @@ let resolvePromise: ((value: boolean) => void) | null = null
 export function useConfirm() {
   const confirm = (opts: ConfirmOptions): Promise<boolean> => {
     options.value = {
-      confirmText: 'Xác nhận',
-      cancelText: 'Hủy',
+      confirmText: 'Confirm',
+      cancelText: 'Cancel',
       type: 'primary',
       ...opts,
     }

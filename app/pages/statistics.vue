@@ -42,10 +42,10 @@ const skipped = ref<string[]>([])
  */
 const runSync = async () => {
   const confirmed = await confirm({
-    title: 'Xác nhận Đồng bộ (Sync)',
-    message: 'Hệ thống sẽ kết nối với CHUNITHM-NET để cập nhật toàn bộ bảng điểm & số lần chơi. Bạn có muốn tiếp tục?',
-    confirmText: 'Đồng bộ ngay',
-    cancelText: 'Hủy',
+    title: 'Sync with CHUNITHM-NET',
+    message: 'This connects to CHUNITHM-NET and refreshes every score and play count. Continue?',
+    confirmText: 'Sync now',
+    cancelText: 'Cancel',
   })
 
   if (!confirmed) return

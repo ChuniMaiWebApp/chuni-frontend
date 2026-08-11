@@ -36,10 +36,10 @@ const captureError = ref<string | null>(null)
 
 const capture = async () => {
   const confirmed = await confirm({
-    title: 'Xác nhận Capture Recent Score',
-    message: 'Hệ thống sẽ lưu lại thông số đánh giá (Justice/Attack/Miss) của 50 lượt chơi gần nhất. Tiếp tục?',
-    confirmText: 'Capture ngay',
-    cancelText: 'Hủy',
+    title: 'Capture recent scores',
+    message: 'This saves the judgement breakdown (Justice/Attack/Miss) for your last 50 plays. Continue?',
+    confirmText: 'Capture now',
+    cancelText: 'Cancel',
   })
 
   if (!confirmed) return
