@@ -62,6 +62,8 @@ const PATHS: Record<string, string> = {
   sliders: 'M4 6h10 M18 6h2 M4 12h4 M12 12h8 M4 18h12 M20 18h0 M14 4v4 M8 10v4 M16 16v4',
   /** A line climbing to the right, for anything about getting better. */
   trending: 'M3 17l6-6 4 4 7-7 M21 8v5h-5',
+  /** Four squares, for "more" — the rest of the app past what fits in a bar. */
+  grid: 'M3 3h7v7H3V3Z M14 3h7v7h-7V3Z M3 14h7v7H3v-7Z M14 14h7v7h-7v-7Z',
 }
 
 export type IconName = keyof typeof PATHS

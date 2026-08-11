@@ -14,6 +14,8 @@ const signOut = async () => {
   await navigateTo('/')
 }
 
+// Desktop dropdown, for the medium-width breakpoint where the full nav no
+// longer fits in one row.
 const showMoreMenu = ref(false)
 const toggleMore = () => {
   showMoreMenu.value = !showMoreMenu.value
@@ -21,6 +23,47 @@ const toggleMore = () => {
 const closeMore = () => {
   showMoreMenu.value = false
 }
+
+/**
+ * Mobile "More" sheet.
+ *
+ * The bottom bar only has room for five destinations. Everything else —
+ * Song Database, Tools, Statistics, Improvement Targets, Top PBs, Rankings,
+ * the theme toggle, sign out — used to have no path to it at all below the
+ * 768px breakpoint: the desktop dropdown that covers the same gap on medium
+ * screens is inside `.desktop-only`, so phones lost it entirely.
+ */
+const showMobileMore = ref(false)
+const toggleMobileMore = () => {
+  showMobileMore.value = !showMobileMore.value
+}
+const closeMobileMore = () => {
+  showMobileMore.value = false
+}
+
+// A route change (including the ones this sheet's own links trigger) should
+// always close it — otherwise it stays open, covering the page it just sent
+// the user to.
+watch(() => route.path, closeMobileMore)
+
+const onMobileMoreKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') closeMobileMore()
+}
+
+watch(showMobileMore, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onMobileMoreKeydown)
+    document.body.style.overflow = 'hidden'
+  }
+  else {
+    document.removeEventListener('keydown', onMobileMoreKeydown)
+    document.body.style.overflow = ''
+  }
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onMobileMoreKeydown)
+})
 </script>
 
 <template>
@@ -105,34 +148,128 @@ const closeMore = () => {
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
+  </header>
+
+  <!--
+    Teleported out of <header>, not just visually placed at the bottom of it.
+    `.app-header` carries `backdrop-filter: blur(8px)` for the frosted-glass
+    look, and CSS makes any element with `backdrop-filter` (also `filter`,
+    `transform`, `perspective`) the containing block for `position: fixed`
+    descendants. With this nav still inside `.app-header`, its `bottom: 0`
+    resolved against the *header's* box — a hairline-thin sticky element
+    pinned to the top of the viewport — not the screen's actual bottom. The
+    whole bar rendered docked under the address bar, overlapping the logo,
+    instead of anywhere near the thumb. Moving it to <body> gives it the real
+    viewport as its containing block, the same fix already used for
+    AppConfirmModal and AppToastContainer.
+  -->
+  <Teleport to="body">
     <nav class="mobile-bottom-nav">
-      <NuxtLink to="/" class="mobile-nav__item">
+      <NuxtLink to="/" class="mobile-nav__item" @click="closeMobileMore">
         <AppIcon name="home" :size="20" />
         <span class="mobile-nav__label">Home</span>
       </NuxtLink>
-      <NuxtLink v-if="isSignedIn" to="/recent" class="mobile-nav__item">
+      <NuxtLink v-if="isSignedIn" to="/recent" class="mobile-nav__item" @click="closeMobileMore">
         <AppIcon name="history" :size="20" />
         <span class="mobile-nav__label">Recent</span>
       </NuxtLink>
-      <NuxtLink v-if="isSignedIn" to="/best50" class="mobile-nav__item">
+      <NuxtLink v-if="isSignedIn" to="/best50" class="mobile-nav__item" @click="closeMobileMore">
         <AppIcon name="trophy" :size="20" />
         <span class="mobile-nav__label">Best 50</span>
       </NuxtLink>
-      <span class="mobile-nav__item mobile-nav__item--disabled" title="Queue feature coming soon">
-        <AppIcon name="users" :size="20" />
-        <span class="mobile-nav__label">Queue</span>
-      </span>
-      <NuxtLink v-if="isSignedIn" to="/profile" class="mobile-nav__item">
+
+      <!--
+        Replaces the old always-disabled "Queue" slot. A bar with only five
+        physical slots has no room to give one away permanently to a feature
+        that isn't live yet — Queue now lives inside the sheet this opens,
+        still marked "coming soon", and this slot instead reaches everything
+        that previously had no mobile path to it at all.
+      -->
+      <button
+        type="button"
+        class="mobile-nav__item mobile-nav__item--button"
+        :class="{ 'is-active': showMobileMore }"
+        :aria-expanded="showMobileMore"
+        aria-haspopup="dialog"
+        @click="toggleMobileMore"
+      >
+        <AppIcon name="grid" :size="20" />
+        <span class="mobile-nav__label">More</span>
+      </button>
+
+      <NuxtLink v-if="isSignedIn" to="/profile" class="mobile-nav__item" @click="closeMobileMore">
         <AppIcon name="user" :size="20" />
         <span class="mobile-nav__label">Profile</span>
       </NuxtLink>
-      <NuxtLink v-else to="/login" class="mobile-nav__item">
+      <NuxtLink v-else to="/login" class="mobile-nav__item" @click="closeMobileMore">
         <AppIcon name="key" :size="20" />
         <span class="mobile-nav__label">Sign In</span>
       </NuxtLink>
     </nav>
-  </header>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="sheet-fade">
+      <div
+        v-if="showMobileMore"
+        class="mobile-more-backdrop"
+        @click.self="closeMobileMore"
+      >
+        <div class="mobile-more-sheet" role="dialog" aria-modal="true" aria-label="More">
+          <div class="mobile-more-handle" aria-hidden="true" />
+
+          <div class="mobile-more-list">
+            <NuxtLink to="/songs" class="mobile-more-item">
+              <AppIcon name="music" :size="20" />
+              <span>Song Database</span>
+            </NuxtLink>
+            <NuxtLink to="/tools" class="mobile-more-item">
+              <AppIcon name="sliders" :size="20" />
+              <span>Tools &amp; Calculators</span>
+            </NuxtLink>
+
+            <template v-if="isSignedIn">
+              <NuxtLink to="/statistics" class="mobile-more-item">
+                <AppIcon name="chart" :size="20" />
+                <span>Statistics</span>
+              </NuxtLink>
+              <NuxtLink to="/improve" class="mobile-more-item">
+                <AppIcon name="target" :size="20" />
+                <span>Improvement Targets</span>
+              </NuxtLink>
+              <NuxtLink to="/top" class="mobile-more-item">
+                <AppIcon name="trophy" :size="20" />
+                <span>Top Personal Bests</span>
+              </NuxtLink>
+              <NuxtLink to="/ranking" class="mobile-more-item">
+                <AppIcon name="trending" :size="20" />
+                <span>Server Rankings</span>
+              </NuxtLink>
+              <span class="mobile-more-item mobile-more-item--disabled" title="Queue feature coming soon">
+                <AppIcon name="users" :size="20" />
+                <span>Queue</span>
+                <span class="badge-soon">Soon</span>
+              </span>
+            </template>
+          </div>
+
+          <div class="mobile-more-footer">
+            <button type="button" class="mobile-more-theme" @click="cycle()">
+              <AppIcon :name="THEME_ICON[preference]" :size="16" />
+              Theme: {{ THEME_LABEL[preference] }}
+            </button>
+
+            <div v-if="user" class="mobile-more-account">
+              <span class="mobile-more-user">{{ user.displayName }}</span>
+              <button type="button" class="mobile-more-signout" @click="signOut(); closeMobileMore()">
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -399,7 +536,8 @@ const closeMore = () => {
 }
 
 .mobile-nav__item:hover,
-.mobile-nav__item.router-link-active {
+.mobile-nav__item.router-link-active,
+.mobile-nav__item.is-active {
   color: var(--color-accent);
 }
 
@@ -408,9 +546,161 @@ const closeMore = () => {
   cursor: not-allowed;
 }
 
+/* The "More" slot is a <button>, not a <NuxtLink> — undo the browser chrome
+   so it matches its siblings exactly instead of looking like a stray control. */
+.mobile-nav__item--button {
+  appearance: none;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
 .mobile-nav__icon {
   font-size: 1.125rem;
   line-height: 1.2;
+}
+
+/* Mobile "More" sheet */
+.mobile-more-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(8, 6, 12, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.mobile-more-sheet {
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: 1.25rem 1.25rem 0 0;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.35);
+  padding: 0.5rem 0.75rem calc(1rem + env(safe-area-inset-bottom));
+}
+
+.mobile-more-handle {
+  width: 2.25rem;
+  height: 4px;
+  margin: 0.25rem auto 0.75rem;
+  border-radius: 999px;
+  background: var(--color-border);
+}
+
+.mobile-more-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-more-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.mobile-more-item:hover,
+.mobile-more-item:active,
+.mobile-more-item.router-link-active {
+  background: var(--color-surface-hover);
+}
+
+.mobile-more-item.router-link-active {
+  color: var(--color-accent);
+}
+
+.mobile-more-item--disabled {
+  color: var(--color-muted);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mobile-more-item--disabled:hover {
+  background: none;
+}
+
+.mobile-more-item .badge-soon {
+  margin-left: auto;
+}
+
+.mobile-more-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.mobile-more-theme,
+.mobile-more-signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.mobile-more-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.mobile-more-user {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-more-signout {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.sheet-fade-enter-active,
+.sheet-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.sheet-fade-enter-active .mobile-more-sheet,
+.sheet-fade-leave-active .mobile-more-sheet {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-fade-enter-from,
+.sheet-fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-fade-enter-from .mobile-more-sheet,
+.sheet-fade-leave-to .mobile-more-sheet {
+  transform: translateY(100%);
 }
 
 @media (min-width: 1140px) {
