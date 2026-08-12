@@ -303,7 +303,8 @@ const translateBonus = (text: string) => {
 
           <!-- Linked VERSE Gate Matrix -->
           <div v-if="gates?.length" class="card gates-section">
-            <h3 class="gates-section__title">Linked VERSE Gate Status (10 Gates)</h3>
+            <!-- Counted, not hardcoded: SEGA adds a gate every version. -->
+            <h3 class="gates-section__title">Linked VERSE Gates ({{ gates.length }})</h3>
             <div class="gates-grid">
               <GateStatus v-for="gate in gates" :key="gate.gate" :gate="gate" />
             </div>
@@ -663,7 +664,6 @@ const translateBonus = (text: string) => {
   gap: 0.625rem;
 }
 
-/* Gate Status visual distinctions */
 .btn {
   display: inline-flex;
   align-items: center;

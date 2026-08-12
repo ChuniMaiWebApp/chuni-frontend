@@ -292,21 +292,14 @@ export interface LoginBonus {
   }>
 }
 
-export type LinkedGateStatus =
-  | 'not_found'
-  | 'under_analysis'
-  | 'linkable'
-  | 'clear'
-  /** The badge image is not in the backend's lookup table. */
-  | 'unknown'
-
 export interface LinkedGateProgress {
   gate: string
-  status: LinkedGateStatus
-  /** The game's own badge art for this gate in this state. */
+  /**
+   * The game's own badge art for this gate, already drawn in whatever state
+   * that gate is in. The only thing reported, because the markup says nothing
+   * about the state and the artwork says all of it.
+   */
   badgeUrl: string | null
-  /** Present only for `unknown`, so the badge can be identified and added. */
-  unrecognisedBadge?: string
 }
 
 // --- Stored records ----------------------------------------------------------
