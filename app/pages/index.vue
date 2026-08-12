@@ -56,7 +56,7 @@ const ALL_PAGES = [
   { to: '/improve', icon: 'trending', title: 'Improvement', description: 'Rating target recommendation engine & play suggestions.', needsAccount: true },
   { to: '/songs', icon: 'music', title: 'Song Database', description: 'Search charts, constants, notecounts, and chart data.', needsAccount: false },
   { to: '/tools', icon: 'sliders', title: 'Tools & Calculators', description: 'Rating, OVER POWER, score borders, and anmitsu calculators.', needsAccount: false },
-  // { to: '/support', icon: 'heart', title: 'Support Project', description: 'Contribute on GitHub or donate to support server infrastructure.', needsAccount: false },
+  { to: '/support', icon: 'heart', title: 'Support Project', description: 'Contribute on GitHub or view project credits.', needsAccount: false },
 ]
 
 const pages = computed(() =>

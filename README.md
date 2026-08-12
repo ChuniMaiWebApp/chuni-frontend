@@ -1,75 +1,49 @@
-# Nuxt Minimal Starter
+# ChunithmWebApp — Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Web application interface for CHUNITHM & Maimai players, built with Nuxt 4 (Vue 3, Vite, TypeScript).
 
-## Setup
+## Quickstart (Localhost)
 
-Make sure to install dependencies:
+### 1. Prerequisites
+- Node.js >= 18.x (Node 20 LTS recommended)
+- npm >= 9.x
+
+### 2. Setup & Installation
 
 ```bash
-# npm
+# Clone repository
+git clone https://github.com/ChuniMaiWebApp/chuni-frontend.git
+cd chuni-frontend
+
+# Install dependencies
 npm install
 
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+# Copy environment configuration
+cp .env.example .env
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+### 3. Development Server
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Open `http://localhost:3100` (or `http://localhost:3000`) in your browser.
 
-Build the application for production:
+### Scripts
 
-```bash
-# npm
-npm run build
+- `npm run dev` — Start development server with hot reload
+- `npm run build` — Build production bundle
+- `npm run preview` — Preview production build locally
+- `npm run lint` — Lint and format code with ESLint
+- `npm run typecheck` — Run TypeScript type checking
 
-# pnpm
-pnpm build
+---
 
-# yarn
-yarn build
+## Credits & Acknowledgements
 
-# bun
-bun run build
-```
+Special thanks to the open-source community and project creators whose work made this platform possible:
 
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- **[chuni-penguin](https://github.com/beer-psi/chuni-penguin)** by [beerpsi](https://github.com/beer-psi) — The original inspiration for this project.
+- **[chunirec](https://developer.chunirec.net/)** — Essential chart constants and rating dataset.
+- **[arcade-songs](https://github.com/zetaraku/arcade-songs)** by [zetaraku](https://github.com/zetaraku) — Data mapping and schema references.

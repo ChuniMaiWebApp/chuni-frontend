@@ -21,6 +21,34 @@ const repos = [
     url: 'https://github.com/ChuniMaiWebApp/chunimai-database',
   },
 ]
+
+/**
+ * One line each. A credit is an acknowledgement, not an essay — the reader
+ * wants to know who and what, and the link covers the rest.
+ */
+const credits = [
+  {
+    name: 'chuni-penguin',
+    role: 'The idea',
+    text: 'beerpsi\'s bot started all this. Thank you.',
+    url: 'https://github.com/beer-psi/chuni-penguin',
+    linkLabel: 'github.com/beer-psi/chuni-penguin',
+  },
+  {
+    name: 'chunirec',
+    role: 'Chart constants',
+    text: 'Every rating here rests on their data.',
+    url: 'https://developer.chunirec.net/',
+    linkLabel: 'developer.chunirec.net',
+  },
+  {
+    name: 'arcade-songs',
+    role: 'The map',
+    text: 'Showed us where the data lives. Shaped our schema.',
+    url: 'https://github.com/zetaraku/arcade-songs',
+    linkLabel: 'github.com/zetaraku/arcade-songs',
+  },
+]
 </script>
 
 <template>
@@ -32,9 +60,9 @@ const repos = [
       <h1 class="support-hero__title">
         Support the <span class="text-accent">Project</span>
       </h1>
-      <p class="support-hero__lead">
-        Help us keep the servers running, maintain open-source tools, and build the best experience for the Chunithm community.
-      </p>
+      <!-- <p class="support-hero__lead">
+        No donations and nothing to buy. The most useful things you can do are use it, report what breaks, and know whose work made it possible.
+      </p> -->
     </div>
 
     <!-- Section 1: Usage Affirmation -->
@@ -45,7 +73,7 @@ const repos = [
       <div class="support-card__content">
         <h2 class="support-card__title">Your Trust is Our Greatest Support</h2>
         <p class="support-card__text">
-          First and foremost, simply using and trusting this website is already a massive support to us! Knowing that our platform helps players track their progress, calculate rating targets, and enjoy the game is our biggest motivation to keep building and improving.
+          Simply using and trusting this website is already a massive support to us! Knowing that our platform helps players track their progress, calculate rating targets, and enjoy the game is our biggest motivation to keep building and improving.
         </p>
       </div>
     </section>
@@ -86,35 +114,40 @@ const repos = [
       </div>
     </section>
 
-    <!-- Section 3: Financial Support & QR Codes -->
+    <!-- Section 3: Credits -->
     <section class="support-section">
       <div class="section-header">
         <h2>
-          <AppIcon name="bolt" :size="20" /> Server &amp; Infrastructure Funding
+          <AppIcon name="heart" :size="20" /> Credits
         </h2>
         <p class="section-subtitle">
-          If you wish to support the project even further, direct contributions via QR code are deeply appreciated. Every donation goes directly towards paying for VPS hosting, domain maintenance, CDN, and server infrastructure to keep the site fast and online 24/7.
+          This project did not start from nothing. These are the people whose work it was built on top of, and what each of them gave it.
         </p>
       </div>
 
-      <div class="qr-grid">
-        <div class="qr-card">
-          <div class="qr-card__badge">Bank Transfer (Vietnam)</div>
-          <h3 class="qr-card__title">Vietcombank (VCB)</h3>
-          <div class="qr-card__img-container">
-            <img src="/vcb-qr.jpg" alt="Vietcombank QR Code" class="qr-card__img">
+      <div class="credit-grid">
+        <article
+          v-for="credit in credits"
+          :key="credit.name"
+          class="credit-card"
+        >
+          <div class="credit-card__header">
+            <h3 class="credit-card__name">{{ credit.name }}</h3>
+            <span class="credit-card__role">{{ credit.role }}</span>
           </div>
-          <p class="qr-card__note">Scan with any banking app in Vietnam</p>
-        </div>
 
-        <div class="qr-card">
-          <div class="qr-card__badge qr-card__badge--paypal">International</div>
-          <h3 class="qr-card__title">PayPal</h3>
-          <div class="qr-card__img-container">
-            <img src="/paypal-qr.jpg" alt="PayPal QR Code" class="qr-card__img">
-          </div>
-          <p class="qr-card__note">Scan with PayPal app for international support</p>
-        </div>
+          <p class="credit-card__text">{{ credit.text }}</p>
+
+          <a
+            :href="credit.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="credit-card__link"
+          >
+            {{ credit.linkLabel }}
+            <AppIcon name="external" :size="13" />
+          </a>
+        </article>
       </div>
     </section>
   </div>
@@ -304,76 +337,70 @@ const repos = [
   border: 1px solid rgba(234, 179, 8, 0.2);
 }
 
-/* QR Grid */
-.qr-grid {
+/* Credits */
+.credit-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1.25rem;
 }
 
-.qr-card {
+.credit-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1.75rem 1.5rem;
+  gap: 0.75rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  transition: border-color 0.2s ease;
 }
 
-.qr-card:hover {
-  border-color: rgba(168, 85, 247, 0.4);
+.credit-card__header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
 }
 
-.qr-card__badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
+.credit-card__name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.credit-card__role {
+  padding: 0.15rem 0.6rem;
   border-radius: 9999px;
-  background: rgba(59, 130, 246, 0.12);
-  color: #60a5fa;
-  font-size: 0.75rem;
-  font-weight: 600;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
 }
 
-.qr-card__badge--paypal {
-  background: rgba(168, 85, 247, 0.12);
-  color: #c084fc;
-}
-
-.qr-card__title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
-}
-
-.qr-card__img-container {
-  width: 100%;
-  max-width: 16rem;
-  aspect-ratio: 1;
-  background: #ffffff;
-  padding: 0.5rem;
-  border-radius: 0.875rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-.qr-card__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.5rem;
-}
-
-.qr-card__note {
-  font-size: 0.8125rem;
-  color: var(--color-muted);
+.credit-card__text {
   margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-muted);
+}
+
+.credit-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  /* Pushed to the bottom so links line up across cards of unequal length. */
+  margin-top: auto;
+  padding-top: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.credit-card__link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {
